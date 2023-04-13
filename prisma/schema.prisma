@@ -14,10 +14,55 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model Example {
-    id        String   @id @default(cuid())
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+model Appointment {
+    id                   String                @id @default(cuid())
+    start                DateTime
+    end                  DateTime
+    type                 String // "lesson", "vacation", "holiday", "excursion", "event"
+    createdAt            DateTime              @default(now())
+    updatedAt            DateTime              @updatedAt
+    isPublic             Boolean               @default(false)
+    isPinned             Boolean               @default(false)
+    lessonAppointment    LessonAppointment?
+    excursionAppointment ExcursionAppointment?
+    eventAppointment     EventAppointment?
+}
+
+model LessonAppointment {
+    id        String      @id
+    parent    Appointment @relation(fields: [id], references: [id])
+    subjectId String
+    subject   Subject     @relation(fields: [subjectId], references: [id])
+    topicId   String
+    topic     Topic       @relation(fields: [topicId], references: [id])
+}
+
+model ExcursionAppointment {
+    id          String      @id
+    parent      Appointment @relation(fields: [id], references: [id])
+    name        String
+    description String
+    location    String
+}
+
+model EventAppointment {
+    id          String      @id
+    parent      Appointment @relation(fields: [id], references: [id])
+    name        String
+    description String
+}
+
+model Subject {
+    id                 String              @id @default(cuid())
+    name               String
+    icon               String
+    lessonAppointments LessonAppointment[]
+}
+
+model Topic {
+    id      String              @id @default(cuid())
+    name    String              @unique
+    lessons LessonAppointment[]
 }
 
 // Necessary for Next auth

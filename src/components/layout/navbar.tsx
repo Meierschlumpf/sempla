@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import {
   Center,
   createStyles,
@@ -34,13 +35,11 @@ const items = [
 
 export function DefaultNavbar() {
   const { colors } = useMantineTheme();
-  const links = items.map((link, index) => (
-    <NavbarLink {...link} key={link.label} />
-  ));
+  const links = items.map((link) => <NavbarLink {...link} key={link.label} />);
 
   return (
     <Navbar
-      height={750}
+      height="100%"
       width={{ base: 80 }}
       p="md"
       sx={(theme) => ({

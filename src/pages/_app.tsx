@@ -7,6 +7,9 @@ import { api } from "~/utils/api";
 import "~/styles/globals.css";
 import Head from "next/head";
 import { MantineProvider } from "@mantine/core";
+import { ModalsProvider } from "@mantine/modals";
+import { modals } from "~/components/modals";
+import { Notifications } from "@mantine/notifications";
 
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
@@ -27,13 +30,21 @@ const MyApp: AppType<{ session: Session | null }> = ({
         withNormalizeCSS
         theme={{
           /** Put your mantine theme override here */
-          colorScheme: "light",
-          primaryColor: "grape",
+          colorScheme: "dark",
+          primaryColor: "indigo",
         }}
       >
-        <SessionProvider session={session}>
-          <Component {...pageProps} />
-        </SessionProvider>
+        <ModalsProvider
+          modals={modals}
+          modalProps={{
+            closeButtonProps: { "aria-label": "Close modal" },
+          }}
+        >
+          <SessionProvider session={session}>
+            <Notifications position="bottom-center" />
+            <Component {...pageProps} />
+          </SessionProvider>
+        </ModalsProvider>
       </MantineProvider>
     </>
   );
