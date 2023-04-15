@@ -138,6 +138,38 @@ export const appointmentsRouter = createTRPCRouter({
 
       return mapAppointments(appointments);
     }),
+  byArea: publicProcedure
+    .input(
+      z.object({
+        areaId: z.string(),
+      })
+    )
+    .output(allOutputSchema)
+    .query(async ({ ctx, input }) => {
+      const appointments = await ctx.prisma.appointment.findMany({
+        orderBy: {
+          start: "asc",
+        },
+        include: {
+          plan: true,
+          lessonAppointment: {
+            include: {
+              subject: true,
+              topic: true,
+            },
+          },
+          eventAppointment: true,
+          excursionAppointment: true,
+        },
+        where: {
+          plan: {
+            areaId: input.areaId,
+          },
+        },
+      });
+
+      return mapAppointments(appointments);
+    }),
   create: publicProcedure
     .input(
       z
