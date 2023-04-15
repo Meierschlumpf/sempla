@@ -19,6 +19,7 @@ import {
   getSearchParamWithFallback,
   useSearchParamsState,
 } from "~/helpers/searchParams";
+import { api } from "~/utils/api";
 
 type QueryParams = {
   areaId: string;
@@ -35,6 +36,11 @@ const Page: NextPage<{
   const [search, setSearch] = useSearchParamsState(query, "search");
   const [tab, setTab] = useSearchParamsState(query, "tab");
   const [debouncedSearch] = useDebouncedValue(search, 250);
+
+  const counts = useCounts({
+    areaId,
+    search: debouncedSearch,
+  });
 
   return (
     <>
@@ -54,9 +60,9 @@ const Page: NextPage<{
           </Group>
           <Tabs value={tab} onTabChange={setTab}>
             <Tabs.List mb="sm">
-              <Tab value="current" count={4} label="Aktuell" />
-              <Tab value="past" count={8} label="Vergangen" />
-              <Tab value="future" count={0} label="Zukünftig" />
+              <Tab value="current" count={counts.current} label="Aktuell" />
+              <Tab value="past" count={counts.past} label="Vergangen" />
+              <Tab value="future" count={counts.future} label="Zukünftig" />
 
               <TextInput
                 ml="auto"
@@ -138,5 +144,17 @@ export const getServerSideProps = async (
         tab,
       } satisfies QueryParams,
     },
+  };
+};
+
+const useCounts = ({ areaId, search }: { areaId: string; search: string }) => {
+  const { data: current } = api.plan.current.useQuery({ areaId, search });
+  const { data: past } = api.plan.past.useQuery({ areaId, search });
+  const { data: future } = api.plan.future.useQuery({ areaId, search });
+
+  return {
+    current: current?.length ?? 0,
+    past: past?.length ?? 0,
+    future: future?.length ?? 0,
   };
 };
