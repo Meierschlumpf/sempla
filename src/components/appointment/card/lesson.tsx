@@ -22,6 +22,7 @@ import {
   IconPin,
   IconPinnedOff,
   IconTrash,
+  IconClock,
 } from "@tabler/icons-react";
 import { generateTimeRange } from "~/helpers/time";
 import { type AppointmentWithType } from "./type";
@@ -30,11 +31,13 @@ import { AppointmentCheckbox } from "./content/checkbox";
 interface AppointmentLessonCardProps {
   item: AppointmentWithType<"lesson">;
   mode: "edit" | "display";
+  showSubject: boolean;
 }
 
 export const AppointmentLessonCard = ({
   item,
   mode,
+  showSubject,
 }: AppointmentLessonCardProps) => {
   const { colors } = useMantineTheme();
 
@@ -44,22 +47,33 @@ export const AppointmentLessonCard = ({
         <Group>
           {mode === "edit" ? (
             <AppointmentCheckbox id={item.id} />
-          ) : (
+          ) : showSubject ? (
             <LessonIcon />
-          )}
+          ) : null}
 
           <Stack spacing={0}>
             <Title order={4} weight={500}>
-              {item.type === "lesson" ? item.data.subject.name : null}
+              {showSubject ? item.data.subject.name : item.data.topic.name}
             </Title>
-            <Group spacing={4}>
-              <Tooltip label="Thema">
-                <IconAddressBook size={16} color={colors.dark[3]} />
-              </Tooltip>
-              <Text size="sm" color={colors.dark[3]}>
-                {item.type === "lesson" ? item.data.topic.name : null}
-              </Text>
-            </Group>
+            {showSubject ? (
+              <Group spacing={4}>
+                <Tooltip label="Thema">
+                  <IconAddressBook size={16} color={colors.dark[3]} />
+                </Tooltip>
+                <Text size="sm" color={colors.dark[3]}>
+                  {item.data.topic.name}
+                </Text>
+              </Group>
+            ) : mode === "edit" ? (
+              <Group spacing={4}>
+                <Tooltip label="Zeit">
+                  <IconClock size={16} color={colors.dark[3]} />
+                </Tooltip>
+                <Text size="sm" color={colors.dark[3]}>
+                  {generateTimeRange(item.start, item.end)}
+                </Text>
+              </Group>
+            ) : null}
           </Stack>
           <Stack spacing={0} ml="xl">
             <Title order={5} weight={400}>
@@ -130,7 +144,7 @@ const LessonMenu = () => {
         </Menu.Target>
         <Menu.Dropdown>
           <Menu.Item
-            onClick={() => {}}
+            onClick={() => []}
             rightSection={
               false ? (
                 <IconPinnedOff style={{ marginLeft: 8 }} size={16} />
@@ -142,7 +156,7 @@ const LessonMenu = () => {
             Termin anpinnen
           </Menu.Item>
           <Menu.Item
-            onClick={() => {}}
+            onClick={() => []}
             rightSection={<IconTrash style={{ marginLeft: 8 }} size={16} />}
             color="red"
           >

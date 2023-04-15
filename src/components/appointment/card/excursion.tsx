@@ -1,29 +1,28 @@
 import {
-  useMantineTheme,
+  ActionIcon,
+  Button,
   Card,
   Group,
-  Checkbox,
+  Menu,
   Stack,
   Text,
+  ThemeIcon,
   Title,
   Tooltip,
-  Button,
-  Menu,
-  ActionIcon,
-  ThemeIcon,
+  useMantineTheme,
 } from "@mantine/core";
 import {
+  IconDots,
   IconMapPin,
   IconPencil,
-  IconDots,
-  IconPinnedOff,
   IconPin,
+  IconPinnedOff,
   IconTrash,
   IconTrekking,
 } from "@tabler/icons-react";
 import { generateTimeRange } from "~/helpers/time";
-import { type AppointmentWithType } from "./type";
 import { AppointmentCheckbox } from "./content/checkbox";
+import { type AppointmentWithType } from "./type";
 
 interface AppointmentExcursionCardProps {
   item: AppointmentWithType<"excursion">;
@@ -94,7 +93,7 @@ const ExcursionMenu = () => {
         </Menu.Target>
         <Menu.Dropdown>
           <Menu.Item
-            onClick={() => {}}
+            onClick={() => []}
             rightSection={
               false ? (
                 <IconPinnedOff style={{ marginLeft: 8 }} size={16} />
@@ -106,7 +105,7 @@ const ExcursionMenu = () => {
             Termin anpinnen
           </Menu.Item>
           <Menu.Item
-            onClick={() => {}}
+            onClick={() => []}
             rightSection={<IconTrash style={{ marginLeft: 8 }} size={16} />}
             color="red"
           >

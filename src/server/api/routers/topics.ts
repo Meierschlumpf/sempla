@@ -1,3 +1,4 @@
+import { type PrismaClient, type Topic } from "@prisma/client";
 import { randomUUID } from "crypto";
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
@@ -5,13 +6,13 @@ import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 type TopicOverviewReducer = {
   topics: {
     id: string;
-    topicId: string;
-    name: string;
+    topicId: string | null;
+    name: string | null;
     start: Date;
     end: Date;
     duration: number;
   }[];
-  lastTopicId: string | null;
+  lastTopicId: string | null | undefined;
 };
 
 const renameScopeSchema = z
@@ -40,71 +41,105 @@ export const topicsRouter = createTRPCRouter({
       },
     });
   }),
-  overview: publicProcedure.query(async ({ ctx }) => {
-    const lessons = await ctx.prisma.lessonAppointment.findMany({
-      include: {
-        parent: true,
-        topic: true,
-      },
-      orderBy: {
-        parent: {
-          start: "asc",
+  byPlan: publicProcedure
+    .input(z.object({ planId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const lessons = await ctx.prisma.lessonAppointment.findMany({
+        include: {
+          parent: true,
+          topic: true,
         },
-      },
-    });
+        orderBy: {
+          parent: {
+            start: "asc",
+          },
+        },
+        where: {
+          parent: {
+            planId: input.planId,
+          },
+        },
+      });
 
-    return lessons.reduce(
-      (prev: TopicOverviewReducer, curr) => {
-        if (!prev.lastTopicId) {
+      return lessons.reduce(
+        (prev: TopicOverviewReducer, curr) => {
+          if (prev.lastTopicId === undefined) {
+            prev.topics.push({
+              id: randomUUID(),
+              topicId: curr.topicId,
+              name: curr.topic === null ? null : curr.topic.name,
+              duration: 1,
+              start: curr.parent.start,
+              end: curr.parent.end,
+            });
+            prev.lastTopicId = curr.topicId;
+
+            return prev;
+          }
+
+          if (prev.lastTopicId === curr.topicId) {
+            prev.topics[prev.topics.length - 1]!.duration++;
+            prev.topics[prev.topics.length - 1]!.end = curr.parent.end;
+
+            return prev;
+          }
+
           prev.topics.push({
             id: randomUUID(),
             topicId: curr.topicId,
-            name: curr.topic.name,
-            duration: 1,
+            name: curr.topic === null ? null : curr.topic.name,
             start: curr.parent.start,
             end: curr.parent.end,
+            duration: 1,
           });
           prev.lastTopicId = curr.topicId;
 
           return prev;
+        },
+        {
+          topics: [],
+          lastTopicId: undefined,
         }
+      ).topics;
+    }),
 
-        if (prev.lastTopicId === curr.topicId) {
-          prev.topics[prev.topics.length - 1]!.duration++;
-          prev.topics[prev.topics.length - 1]!.end = curr.parent.end;
+  countByPlan: publicProcedure
+    .input(
+      z.object({
+        planId: z.string(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const lessons = await ctx.prisma.lessonAppointment.findMany({
+        where: {
+          parent: {
+            planId: input.planId,
+          },
+        },
+        select: {
+          topicId: true,
+          parent: {
+            select: {
+              planId: true,
+            },
+          },
+        },
+        distinct: ["topicId"],
+      });
 
-          return prev;
-        }
-
-        prev.topics.push({
-          id: randomUUID(),
-          topicId: curr.topicId,
-          name: curr.topic.name,
-          start: curr.parent.start,
-          end: curr.parent.end,
-          duration: 1,
-        });
-        prev.lastTopicId = curr.topicId;
-
-        return prev;
-      },
-      {
-        topics: [],
-        lastTopicId: null,
-      }
-    ).topics;
-  }),
+      return lessons.length;
+    }),
 
   move: publicProcedure
     .input(
       z.object({
         from: z.object({
-          id: z.string(),
+          id: z.string().nullable(),
           start: z.date(),
           end: z.date(),
         }),
         to: z.object({
-          id: z.string(),
+          id: z.string().nullable(),
           start: z.date(),
           end: z.date(),
         }),
@@ -229,25 +264,13 @@ export const topicsRouter = createTRPCRouter({
   rename: publicProcedure
     .input(
       z.object({
-        id: z.string(),
+        id: z.string().nullable(),
         name: z.string(),
         scope: renameScopeSchema,
       })
     )
     .mutation(async ({ ctx, input }) => {
-      let topic = await ctx.prisma.topic.findFirst({
-        where: {
-          name: input.name,
-        },
-      });
-
-      if (!topic) {
-        topic = await ctx.prisma.topic.create({
-          data: {
-            name: input.name,
-          },
-        });
-      }
+      const topic = await createOrGetTopicByName(ctx.prisma, input.name);
 
       await ctx.prisma.lessonAppointment.updateMany({
         where: {
@@ -272,7 +295,7 @@ export const topicsRouter = createTRPCRouter({
         },
       });
 
-      if (count > 0) return;
+      if (count > 0 || input.id === null) return;
 
       await ctx.prisma.topic.delete({
         where: {
@@ -280,4 +303,81 @@ export const topicsRouter = createTRPCRouter({
         },
       });
     }),
+
+  shorten: publicProcedure
+    .input(
+      z.object({
+        topicId: z.string(),
+        start: z.date(),
+        end: z.date(),
+        amount: z.number().negative(),
+        newName: z.string().nullable(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const changeToNewName = await ctx.prisma.lessonAppointment.findMany({
+        where: {
+          topicId: input.topicId,
+          parent: {
+            start: {
+              gte: input.start,
+            },
+            end: {
+              lte: input.end,
+            },
+          },
+        },
+        orderBy: {
+          parent: {
+            start: "desc",
+          },
+        },
+        take: input.amount * -1,
+      });
+
+      const isEmpty = input.newName === null || input.newName.trim() === "";
+
+      for (let i = 0; i < changeToNewName.length; i++) {
+        const appointment = changeToNewName[i]!;
+        await ctx.prisma.lessonAppointment.update({
+          where: {
+            id: appointment.id,
+          },
+          data: {
+            topic: {
+              connectOrCreate: isEmpty
+                ? undefined
+                : {
+                    where: {
+                      name: input.newName!,
+                    },
+                    create: {
+                      name: input.newName!,
+                    },
+                  },
+              disconnect: isEmpty ? true : undefined,
+            },
+          },
+        });
+      }
+    }),
 });
+
+export const createOrGetTopicByName = async (
+  prisma: PrismaClient,
+  name: string
+): Promise<Topic> => {
+  const topic = await prisma.topic.findFirst({
+    where: {
+      name,
+    },
+  });
+
+  if (topic) return topic;
+
+  return await prisma.topic.create({
+    data: {
+      name,
+    },
+  });
+};

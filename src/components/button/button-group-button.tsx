@@ -1,11 +1,13 @@
 import { Button, Text, useMantineTheme } from "@mantine/core";
 import { type TablerIconsProps } from "@tabler/icons-react";
+import Link from "next/link";
 import { type ReactNode } from "react";
 
 interface ButtonGroupButtonProps {
   icon: (props: TablerIconsProps) => JSX.Element;
+  href: string;
   children: ReactNode;
-  count: number;
+  count: number | undefined;
 }
 
 export const ButtonGroupButton = (props: ButtonGroupButtonProps) => {
@@ -13,6 +15,8 @@ export const ButtonGroupButton = (props: ButtonGroupButtonProps) => {
 
   return (
     <Button
+      component={Link}
+      href={props.href}
       variant="default"
       leftIcon={<props.icon size={16} />}
       styles={{
@@ -31,7 +35,7 @@ export const ButtonGroupButton = (props: ButtonGroupButtonProps) => {
           weight={600}
           style={{ borderRadius: 6 }}
         >
-          {props.count}
+          {props.count ?? 0}
         </Text>
       }
     >

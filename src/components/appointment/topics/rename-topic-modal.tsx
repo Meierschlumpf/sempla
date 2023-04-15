@@ -11,7 +11,7 @@ import {
   useMantineTheme,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { useModals, type ContextModalProps } from "@mantine/modals";
+import { type ContextModalProps } from "@mantine/modals";
 import {
   IconCheck,
   IconChevronDown,
@@ -20,13 +20,13 @@ import {
   IconInfoCircle,
   IconSquare,
 } from "@tabler/icons-react";
-import React from "react";
-import { useState } from "react";
+import React, { useState } from "react";
+import { openContextModal } from "~/components/modals";
 import { api } from "~/utils/api";
 
 type ModalInnerProps = {
-  topicId: string;
-  name: string;
+  topicId: string | null;
+  name: string | null;
   start: Date;
   end: Date;
   planId: string;
@@ -36,7 +36,7 @@ type FormType = {
   name: string;
 };
 
-export const UpdateTopicModal = ({
+export const RenameTopicModal = ({
   id,
   context,
   innerProps,
@@ -47,7 +47,7 @@ export const UpdateTopicModal = ({
   const form = useForm<FormType>({
     validateInputOnChange: true,
     initialValues: {
-      name: innerProps.name,
+      name: innerProps.name ?? "",
     },
     validate: undefined, // TODO: add validation with zod
   });
@@ -63,7 +63,7 @@ export const UpdateTopicModal = ({
         end: innerProps.end,
       },
     });
-    await utils.topic.overview.invalidate();
+    await utils.topic.byPlan.invalidate();
     context.closeModal(id);
   };
 
@@ -95,11 +95,10 @@ export const UpdateTopicModal = ({
   );
 };
 
-export const useOpenUpdateTopicModal = (props: ModalInnerProps) => {
-  const modals = useModals();
-
+export const useOpenRenameTopicModal = (props: ModalInnerProps) => {
   return () => {
-    modals.openContextModal("updateTopic", {
+    openContextModal({
+      modal: "renameTopic",
       innerProps: props,
       title: <Title order={4}>Thema umbenennen</Title>,
       size: "md",

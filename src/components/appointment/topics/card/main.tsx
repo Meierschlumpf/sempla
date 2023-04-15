@@ -19,7 +19,8 @@ import {
   IconPencil,
 } from "@tabler/icons-react";
 import { type RouterOutputs } from "~/utils/api";
-import { useOpenUpdateTopicModal } from "../update-topic-modal";
+import { useOpenRenameTopicModal } from "../rename-topic-modal";
+import { useOpenShortenTopicModal } from "../shorten-topic-modal";
 
 type TopicCardProps = {
   item: RouterOutputs["topic"]["overview"][number];
@@ -84,9 +85,17 @@ type EditMenuProps = {
 };
 
 const EditMenu = ({ item }: EditMenuProps) => {
-  const openUpdateModal = useOpenUpdateTopicModal({
+  const isShortenDisabled = item.topicId === null || item.duration === 1;
+
+  const openUpdateModal = useOpenRenameTopicModal({
     ...item,
     planId: "",
+  });
+
+  const openShortenTopicModal = useOpenShortenTopicModal({
+    ...item,
+    topicId: item.topicId!,
+    name: item.name!,
   });
 
   return (
@@ -100,10 +109,21 @@ const EditMenu = ({ item }: EditMenuProps) => {
         <Menu.Item icon={<IconPencil size={16} />} onClick={openUpdateModal}>
           Umbenennen
         </Menu.Item>
-        <Menu.Item icon={<IconClockPlus size={16} />}>
+        <Menu.Item
+          icon={<IconClockPlus size={16} />}
+          disabled={item.topicId === null}
+        >
           Thema verlängern
         </Menu.Item>
-        <Menu.Item icon={<IconClockMinus size={16} />}>
+        <Menu.Item
+          icon={<IconClockMinus size={16} />}
+          disabled={isShortenDisabled}
+          onClick={() => {
+            if (isShortenDisabled) return;
+
+            openShortenTopicModal();
+          }}
+        >
           Thema verkürzen
         </Menu.Item>
       </Menu.Dropdown>

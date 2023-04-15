@@ -22,7 +22,7 @@ const Page: NextPage = () => {
 export default Page;
 
 const TopicList = () => {
-  const { data: topics } = api.topic.overview.useQuery();
+  const { data: topics } = api.topic.byPlan.useQuery();
 
   return (
     <Stack spacing="xs">

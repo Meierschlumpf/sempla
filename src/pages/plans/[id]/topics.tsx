@@ -1,5 +1,5 @@
 import { Container, Stack, Text, Title } from "@mantine/core";
-import { type NextPage } from "next";
+import { type GetServerSidePropsContext, type NextPage } from "next";
 import { Layout } from "~/components/layout/layout";
 
 import {
@@ -19,20 +19,84 @@ import {
 } from "@dnd-kit/sortable";
 
 import { openConfirmModal } from "@mantine/modals";
+import { type Plan } from "@prisma/client";
 import dayjs from "dayjs";
 import React, { useState } from "react";
-import { api, type RouterOutputs } from "~/utils/api";
+import { z } from "zod";
 import { SortableTopicCard } from "~/components/appointment/topics/card/sortable";
+import { createSsgHelper } from "~/helpers/createSsgHelper";
+import { api, type RouterOutputs } from "~/utils/api";
 
-const TopicList = () => {
-  const utils = api.useContext();
-  const [topics, setTopics] = useState<RouterOutputs["topic"]["overview"]>([]);
-  const { mutateAsync: moveTopicsAsync } = api.topic.move.useMutation();
-  api.topic.overview.useQuery(undefined, {
-    onSuccess(data) {
-      setTopics(data);
+const Page: NextPage<{ plan: Plan }> = ({ plan }) => {
+  return (
+    <Layout>
+      <Container>
+        <Title>Themen</Title>
+
+        <TopicList plan={plan} />
+      </Container>
+    </Layout>
+  );
+};
+
+export default Page;
+
+const querySchema = z.object({
+  id: z.string().cuid(),
+});
+
+export const getServerSideProps = async (
+  context: GetServerSidePropsContext
+) => {
+  const result = querySchema.safeParse(context.query);
+
+  if (!result.success) {
+    return {
+      notFound: true,
+    };
+  }
+
+  const ssg = await createSsgHelper(context);
+
+  const plan = await ssg.plan.byId.fetch(result.data);
+
+  if (!plan) {
+    return {
+      notFound: true,
+    };
+  }
+
+  await ssg.topic.byPlan.prefetch({ planId: plan.id });
+
+  return {
+    props: {
+      trpcState: ssg.dehydrate(),
+      plan,
     },
-  });
+  };
+};
+
+type TopicListProps = {
+  plan: Plan;
+};
+
+const TopicList = ({ plan }: TopicListProps) => {
+  const utils = api.useContext();
+  const { mutateAsync: moveTopicsAsync } = api.topic.move.useMutation();
+
+  const { data } = api.topic.byPlan.useQuery(
+    { planId: plan.id },
+    {
+      onSuccess(data) {
+        setTopics(data);
+      },
+    }
+  );
+
+  // Because the data is loaded on the server, we can use it directly but when a change appears we update the state with setTopics in the onSuccess callback.
+  const [topics, setTopics] = useState<RouterOutputs["topic"]["byPlan"]>(
+    data ?? []
+  );
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -49,7 +113,7 @@ const TopicList = () => {
     >
       <SortableContext items={topics} strategy={verticalListSortingStrategy}>
         <Stack spacing="xs">
-          {topics.map((item) => (
+          {topics?.map((item) => (
             <React.Fragment key={item.id}>
               <Stack spacing={0}>
                 <Text size="sm">{dayjs(item.start).format("DD.MM.YYYY")}</Text>
@@ -93,7 +157,7 @@ const TopicList = () => {
         color: "red",
       },
       onCancel: () => {
-        void utils.topic.overview.invalidate();
+        void utils.topic.byPlan.invalidate();
       },
       onConfirm: () => {
         void moveTopicsAsync(
@@ -111,7 +175,7 @@ const TopicList = () => {
           },
           {
             onSuccess: () => {
-              void utils.topic.overview.invalidate();
+              void utils.topic.byPlan.invalidate();
             },
           }
         );
@@ -119,17 +183,3 @@ const TopicList = () => {
     });
   }
 };
-
-const Page: NextPage = () => {
-  return (
-    <Layout>
-      <Container>
-        <Title>Themen</Title>
-
-        <TopicList />
-      </Container>
-    </Layout>
-  );
-};
-
-export default Page;

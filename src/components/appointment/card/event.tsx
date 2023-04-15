@@ -84,7 +84,7 @@ const EventMenu = () => {
         </Menu.Target>
         <Menu.Dropdown>
           <Menu.Item
-            onClick={() => {}}
+            onClick={() => []}
             rightSection={
               false ? (
                 <IconPinnedOff style={{ marginLeft: 8 }} size={16} />
@@ -96,7 +96,7 @@ const EventMenu = () => {
             Termin anpinnen
           </Menu.Item>
           <Menu.Item
-            onClick={() => {}}
+            onClick={() => []}
             rightSection={<IconTrash style={{ marginLeft: 8 }} size={16} />}
             color="red"
           >

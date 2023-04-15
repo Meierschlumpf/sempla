@@ -21,11 +21,12 @@ model Appointment {
     type                 String // "lesson", "vacation", "holiday", "excursion", "event"
     createdAt            DateTime              @default(now())
     updatedAt            DateTime              @updatedAt
-    isPublic             Boolean               @default(false)
     isPinned             Boolean               @default(false)
     lessonAppointment    LessonAppointment?
     excursionAppointment ExcursionAppointment?
     eventAppointment     EventAppointment?
+    plan                 Plan                  @relation(fields: [planId], references: [id])
+    planId               String
 }
 
 model LessonAppointment {
@@ -33,8 +34,8 @@ model LessonAppointment {
     parent    Appointment @relation(fields: [id], references: [id])
     subjectId String
     subject   Subject     @relation(fields: [subjectId], references: [id])
-    topicId   String
-    topic     Topic       @relation(fields: [topicId], references: [id])
+    topicId   String?
+    topic     Topic?      @relation(fields: [topicId], references: [id])
 }
 
 model ExcursionAppointment {
@@ -55,14 +56,43 @@ model EventAppointment {
 model Subject {
     id                 String              @id @default(cuid())
     name               String
+    routeName          String              @unique
     icon               String
     lessonAppointments LessonAppointment[]
+    plans              Plan[]
 }
 
 model Topic {
     id      String              @id @default(cuid())
     name    String              @unique
     lessons LessonAppointment[]
+}
+
+model Area {
+    id        String @id @default(cuid())
+    name      String @unique
+    routeName String @unique
+    plans     Plan[]
+}
+
+model Plan {
+    id           String        @id @default(cuid())
+    isPublic     Boolean       @default(false)
+    appointments Appointment[]
+    subjectId    String
+    subject      Subject       @relation(fields: [subjectId], references: [id])
+    areaId       String
+    area         Area          @relation(fields: [areaId], references: [id])
+    creatorId    String
+    creator      Teacher       @relation(fields: [creatorId], references: [id])
+}
+
+model Teacher {
+    id        String @id @default(cuid())
+    firstName String
+    lastName  String
+    imageUrl  String
+    plans     Plan[]
 }
 
 // Necessary for Next auth

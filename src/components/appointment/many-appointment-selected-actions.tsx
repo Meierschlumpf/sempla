@@ -25,13 +25,15 @@ export const ManyAppointmentSelectedActions = () => {
 
   return (
     <Group pl={16}>
-      <Checkbox
-        m={3}
-        indeterminate={isIndeterminate}
-        checked={isAllChecked}
-        onChange={toggleAll}
-      />
-      <Text>{selectedAppointments.length} ausgewählt</Text>
+      <Group spacing="xs">
+        <Checkbox
+          m={3}
+          indeterminate={isIndeterminate}
+          checked={isAllChecked}
+          onChange={toggleAll}
+        />
+        <Text>{selectedAppointments.length} ausgewählt</Text>
+      </Group>
 
       {selectedAppointments.length > 0 && (
         <Button.Group>

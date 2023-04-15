@@ -7,6 +7,7 @@ import {
   Input,
   ScrollArea,
   Select,
+  type SelectItem,
   Stack,
   Text,
   TextInput,
@@ -16,19 +17,20 @@ import {
 } from "@mantine/core";
 import { DatePickerInput, TimeInput } from "@mantine/dates";
 import {
-  type UseFormReturnType,
   createFormContext,
   useForm,
+  type UseFormReturnType,
 } from "@mantine/form";
 import { useMediaQuery } from "@mantine/hooks";
-import { useModals, type ContextModalProps } from "@mantine/modals";
-import { RichTextEditor, Link } from "@mantine/tiptap";
+import { type ContextModalProps } from "@mantine/modals";
+import { Link, RichTextEditor } from "@mantine/tiptap";
 import { IconChalkboard, IconTicket, IconTrekking } from "@tabler/icons-react";
-import { type JSONContent, useEditor } from "@tiptap/react";
+import { useEditor, type JSONContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { type ReactNode, useState } from "react";
+import { useState, type ReactNode } from "react";
 import { z } from "zod";
 import { api } from "~/utils/api";
+import { openContextModal } from "../modals";
 
 type SharedFormType = {
   startDate: Date;
@@ -45,7 +47,6 @@ type ConstructUseFormReturnType<TForm extends SharedFormType> =
 
 type LessonFormType = SharedFormType & {
   topicId: string;
-  subjectId: string;
 };
 
 type EventFormType = SharedFormType & {
@@ -169,13 +170,15 @@ const handleSubmitMiddleware = (
   );
   return { start, end };
 };
+type ModalInnerProps = { planId: string };
 
 const CreateLessonForm = ({
   context,
   id,
-}: Omit<ContextModalProps<never>, "innerProps">) => {
-  const { data: subjects } = api.subject.all.useQuery();
+  innerProps,
+}: ContextModalProps<ModalInnerProps>) => {
   const { data: topics } = api.topic.all.useQuery();
+  const [createdTopic, setCreatedTopic] = useState<SelectItem | null>(null);
   const utils = api.useContext();
   const { mutate } = api.appointment.create.useMutation();
   const form = useForm<LessonFormType>();
@@ -183,22 +186,39 @@ const CreateLessonForm = ({
   const handleSubmit = (values: LessonFormType) => {
     const { start, end } = handleSubmitMiddleware(values, false);
 
+    const shouldCreate = values.topicId === "new";
+
+    const input = shouldCreate
+      ? {
+          topicName: createdTopic!.label!,
+          topicId: null,
+        }
+      : {
+          topicId: values.topicId,
+          topicName: null,
+        };
+
     mutate(
       {
         type: "lesson",
         start,
         end,
-        topicId: values.topicId,
-        subjectId: values.subjectId,
+        planId: innerProps.planId,
+        ...input,
       },
       {
         onSuccess: () => {
           context.closeModal(id);
-          void utils.appointment.all.invalidate();
+          void utils.appointment.byPlan.invalidate();
         },
       }
     );
   };
+
+  const topicData = [
+    createdTopic,
+    ...(topics?.map((t) => ({ value: t.id, label: t.name })) ?? []),
+  ].filter((t) => t !== null) as SelectItem[];
 
   return (
     <FormProvider form={form}>
@@ -209,28 +229,18 @@ const CreateLessonForm = ({
             <Select
               required
               creatable
+              getCreateLabel={(value) => `Thema "${value}" erstellen`}
+              onCreate={(value) => {
+                setCreatedTopic({ value: "new", label: value });
+                return { value: "new", label: value };
+              }}
               hoverOnSearchChange
               clearable
               searchable
               selectOnBlur
-              data={topics?.map((t) => ({ value: t.id, label: t.name })) ?? []}
+              data={topicData}
               label="Thema"
               {...form.getInputProps("topicId")}
-            />
-          </Grid.Col>
-          <Grid.Col span={12}>
-            <Select
-              required
-              selectOnBlur
-              searchable
-              nothingFound="Nichts gefunden"
-              hoverOnSearchChange
-              clearable
-              data={
-                subjects?.map((s) => ({ value: s.id, label: s.name })) ?? []
-              }
-              label="Fach"
-              {...form.getInputProps("subjectId")}
             />
           </Grid.Col>
           <Grid.Col span={12}>
@@ -304,7 +314,8 @@ const DescriptionEditor = (props: {
 const CreateEventForm = ({
   context,
   id,
-}: Omit<ContextModalProps<never>, "innerProps">) => {
+  innerProps,
+}: ContextModalProps<ModalInnerProps>) => {
   const utils = api.useContext();
   const { mutate } = api.appointment.create.useMutation();
   const form = useForm<EventFormType>();
@@ -319,6 +330,7 @@ const CreateEventForm = ({
         end,
         name: values.name,
         description: values.description ?? "",
+        planId: innerProps.planId,
       },
       {
         onSuccess: () => {
@@ -361,7 +373,8 @@ const CreateEventForm = ({
 const CreateExcursionForm = ({
   context,
   id,
-}: Omit<ContextModalProps<never>, "innerProps">) => {
+  innerProps,
+}: ContextModalProps<ModalInnerProps>) => {
   const utils = api.useContext();
   const { mutate } = api.appointment.create.useMutation();
   const form = useForm<ExcursionFormType>();
@@ -377,6 +390,7 @@ const CreateExcursionForm = ({
         name: values.name,
         description: values.description ?? "",
         location: values.location,
+        planId: innerProps.planId,
       },
       {
         onSuccess: () => {
@@ -485,7 +499,8 @@ const AppointmentSelection = ({ setType }: AppointmentSelectionProps) => {
 export const CreateAppointmentModal = ({
   id,
   context,
-}: ContextModalProps<Record<never, unknown>>) => {
+  innerProps,
+}: ContextModalProps<ModalInnerProps>) => {
   const [type, setType] = useState<AppointmentType>();
 
   if (type === undefined) {
@@ -494,17 +509,16 @@ export const CreateAppointmentModal = ({
 
   const currentForm = appointmentTypes.find((t) => t.type === type);
 
-  if (!currentForm) return null;
+  if (!currentForm) return <></>;
 
-  return <currentForm.form id={id} context={context} />;
+  return <currentForm.form id={id} context={context} innerProps={innerProps} />;
 };
 
-export const useOpenCreateAppointmentModal = () => {
-  const modals = useModals();
-
+export const useOpenCreateAppointmentModal = (props: ModalInnerProps) => {
   return () => {
-    modals.openContextModal("createAppointment", {
-      innerProps: {},
+    openContextModal({
+      modal: "createAppointment",
+      innerProps: props,
       title: <Title order={4}>Termin erstellen</Title>,
       size: "xl",
     });

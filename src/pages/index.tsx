@@ -13,6 +13,7 @@ import {
 import { IconBooks, IconPhoto, IconPlus } from "@tabler/icons-react";
 import dayjs from "dayjs";
 import { type NextPage } from "next";
+import { useSession } from "next-auth/react";
 import React from "react";
 import { AppointmentCard } from "~/components/appointment/card/main";
 import { useOpenCreateAppointmentModal } from "~/components/appointment/create-appointment-modal";
@@ -22,9 +23,11 @@ import {
 } from "~/components/appointment/many-appointment-selected-actions";
 import { ButtonGroupButton } from "~/components/button/button-group-button";
 import { Layout } from "~/components/layout/layout";
+import { useRole } from "~/helpers/role";
 import { api } from "~/utils/api";
 
 const Home: NextPage = () => {
+  const role = useRole();
   const { primaryColor } = useMantineTheme();
   const openCreateModal = useOpenCreateAppointmentModal();
 
@@ -47,10 +50,18 @@ const Home: NextPage = () => {
 
           <Group>
             <Button.Group>
-              <ButtonGroupButton icon={IconPhoto} count={0}>
+              <ButtonGroupButton
+                href={
+                  role == "student"
+                    ? "/appointments/topics"
+                    : "/appointments/topics/7/edit"
+                }
+                icon={IconPhoto}
+                count={0}
+              >
                 Themen
               </ButtonGroupButton>
-              <ButtonGroupButton icon={IconBooks} count={0}>
+              <ButtonGroupButton href="/" icon={IconBooks} count={0}>
                 Materialien
               </ButtonGroupButton>
             </Button.Group>
