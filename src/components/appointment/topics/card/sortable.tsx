@@ -4,10 +4,14 @@ import { TopicCard } from "./main";
 import { CSS } from "@dnd-kit/utilities";
 
 type SortableTopicCardProps = {
-  item: RouterOutputs["topic"]["overview"][number];
+  item: RouterOutputs["topic"]["byPlan"][number];
+  showSubject?: boolean;
 };
 
-export const SortableTopicCard = ({ item }: SortableTopicCardProps) => {
+export const SortableTopicCard = ({
+  item,
+  showSubject,
+}: SortableTopicCardProps) => {
   const { transform, transition, attributes, listeners, setNodeRef } =
     useSortable({
       id: item.id,
@@ -26,6 +30,7 @@ export const SortableTopicCard = ({ item }: SortableTopicCardProps) => {
       listeners={listeners}
       setNodeRef={setNodeRef}
       style={style}
+      showSubject={showSubject}
     />
   );
 };

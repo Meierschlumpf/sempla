@@ -246,7 +246,7 @@ export const planRouter = createTRPCRouter({
         },
       });
     }),
-  selectTemplate: publicProcedure
+  selectTemplateAndGenerateAppointments: publicProcedure
     .input(
       z.object({
         planId: z.string(),
@@ -257,6 +257,12 @@ export const planRouter = createTRPCRouter({
       const plan = await ctx.prisma.plan.findUnique({
         where: {
           id: input.planId,
+        },
+        include: {
+          subject: true,
+          area: true,
+          lessons: true,
+          timeSpan: true,
         },
       });
 
@@ -272,7 +278,7 @@ export const planRouter = createTRPCRouter({
         // Check for appointments that are defined specifically for this plan
       }
 
-      return await ctx.prisma.plan.update({
+      await ctx.prisma.plan.update({
         where: {
           id: input.planId,
         },
@@ -280,6 +286,118 @@ export const planRouter = createTRPCRouter({
           templateId: input.templateId === "empty" ? null : input.templateId,
         },
       });
+
+      const template = await ctx.prisma.planTemplate.findUnique({
+        where: {
+          id: input.templateId,
+        },
+        include: {
+          appointments: {
+            include: {
+              earlydayAppointments: true,
+              eventAppointment: true,
+              vacationAppointments: true,
+              excursionAppointment: true,
+              holidayAppointments: true,
+            },
+          },
+        },
+      });
+
+      let date = dayjs(plan.timeSpan.start);
+
+      while (date.isBefore(plan.timeSpan.end)) {
+        const lessons = plan.lessons.filter(
+          (x) => x.weekDay === date.day() - 1
+        );
+
+        if (lessons.length === 0) {
+          date = date.add(1, "day");
+          continue;
+        }
+
+        const isInVacations =
+          template !== null &&
+          template.appointments.some((appointment) => {
+            if (appointment.type !== "vacation") return;
+
+            return (
+              dayjs(appointment.start).isBefore(date, "hour") &&
+              dayjs(appointment.end).isAfter(date, "hour")
+            );
+          });
+
+        if (isInVacations) {
+          date = date.add(1, "day");
+          continue;
+        }
+
+        const isOnHoliday =
+          template !== null &&
+          template.appointments.some((appointment) => {
+            if (appointment.type !== "holiday") return;
+
+            return (
+              dayjs(appointment.start).isBefore(date, "hour") &&
+              dayjs(appointment.end).isAfter(date, "hour")
+            );
+          });
+
+        if (isOnHoliday) {
+          date = date.add(1, "day");
+          continue;
+        }
+
+        const isOnEventDay =
+          template !== null &&
+          template.appointments.some((appointment) => {
+            if (appointment.type !== "event") return;
+
+            return (
+              dayjs(appointment.start).isBefore(date, "hour") &&
+              dayjs(appointment.end).isAfter(date, "hour")
+            );
+          });
+
+        if (isOnEventDay) {
+          date = date.add(1, "day");
+          continue;
+        }
+
+        const isEarlyDay =
+          template !== null &&
+          template.appointments.some((appointment) => {
+            if (appointment.type !== "earlyday") return;
+
+            return dayjs(appointment.start).isSame(date, "day");
+          });
+
+        for (const lesson of lessons) {
+          if (lesson.endTime / 60 > 16 && isEarlyDay) continue;
+
+          const startOfDay = dayjs(date).startOf("day").add(1, "hour");
+          const startTime = dayjs(startOfDay).add(lesson.startTime, "minute");
+          const endTime = dayjs(startOfDay).add(lesson.endTime, "minute");
+
+          await ctx.prisma.appointment.create({
+            data: {
+              start: startTime.toDate(),
+              end: endTime.toDate(),
+              planId: plan.id,
+              type: "lesson",
+              lessonAppointment: {
+                create: {
+                  subjectId: plan.subjectId,
+                },
+              },
+            },
+          });
+        }
+
+        date = date.add(1, "day");
+      }
+
+      return;
     }),
   remove: publicProcedure
     .input(
@@ -291,6 +409,38 @@ export const planRouter = createTRPCRouter({
       return await ctx.prisma.plan.delete({
         where: {
           id: input.id,
+        },
+      });
+    }),
+  test: publicProcedure.mutation(async ({ ctx }) => {
+    await ctx.prisma.lessonAppointment.deleteMany({
+      where: {
+        topicId: null,
+      },
+    });
+
+    await ctx.prisma.appointment.deleteMany({
+      where: {
+        type: "lesson",
+        createdAt: {
+          gt: dayjs("2023-04-16T13:40:00.000Z").toDate(),
+        },
+      },
+    });
+  }),
+  finishCreation: publicProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ctx.prisma.plan.update({
+        where: {
+          id: input.id,
+        },
+        data: {
+          isDraft: false,
         },
       });
     }),

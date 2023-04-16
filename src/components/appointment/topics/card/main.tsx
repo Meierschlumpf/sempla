@@ -23,7 +23,8 @@ import { useOpenRenameTopicModal } from "../rename-topic-modal";
 import { useOpenShortenTopicModal } from "../shorten-topic-modal";
 
 type TopicCardProps = {
-  item: RouterOutputs["topic"]["overview"][number];
+  item: RouterOutputs["topic"]["byPlan"][number];
+  showSubject?: boolean;
 } & (
   | {
       mode: "display";
@@ -37,7 +38,7 @@ type TopicCardProps = {
     }
 );
 
-export const TopicCard = ({ item, ...props }: TopicCardProps) => {
+export const TopicCard = ({ item, showSubject, ...props }: TopicCardProps) => {
   const { colors } = useMantineTheme();
 
   const cardProps =
@@ -64,9 +65,11 @@ export const TopicCard = ({ item, ...props }: TopicCardProps) => {
             <IconGripVertical {...handleProps} color={colors.gray[6]} />
           )}
 
-          <ThemeIcon variant="light">
-            <IconMath />
-          </ThemeIcon>
+          {showSubject && (
+            <ThemeIcon variant="light">
+              <IconMath />
+            </ThemeIcon>
+          )}
           <Title order={4} weight={500}>
             {item.name}
           </Title>
@@ -81,7 +84,7 @@ export const TopicCard = ({ item, ...props }: TopicCardProps) => {
 };
 
 type EditMenuProps = {
-  item: RouterOutputs["topic"]["overview"][number];
+  item: RouterOutputs["topic"]["byPlan"][number];
 };
 
 const EditMenu = ({ item }: EditMenuProps) => {

@@ -1,18 +1,20 @@
-import { Button, Center, Container, Stepper } from "@mantine/core";
+import { Container, Stack, Stepper, Text, Title } from "@mantine/core";
 import { type GetServerSidePropsContext, type NextPage } from "next";
 import Head from "next/head";
 import { useState } from "react";
 import { Layout } from "~/components/layout/layout";
 import { PlanFirstStepForm } from "~/components/plan/create/first-step";
+import { PlanLastStepForm } from "~/components/plan/create/last-step";
 import { PlanSecondStepForm } from "~/components/plan/create/second-step";
 import { createSsgHelper } from "~/helpers/createSsgHelper";
 
 const Page: NextPage<{
   draftPlanId: string | null;
-}> = ({ draftPlanId }) => {
+  draftTemplateId: string | null;
+}> = ({ draftPlanId, draftTemplateId }) => {
   const [active, setActive] = useState(0);
-  const [planId, setPlanId] = useState<string | null>(draftPlanId ?? null);
-  const [templateId, setTemplateId] = useState<string | null>(null);
+  const [planId, setPlanId] = useState<string | null>(draftPlanId);
+  const [templateId, setTemplateId] = useState<string | null>(draftTemplateId);
 
   return (
     <>
@@ -52,12 +54,16 @@ const Page: NextPage<{
               label="Letzter Schritt"
               description="Themen definieren"
             >
-              <Center>
-                <Button onClick={() => setActive((a) => a + 1)}>Next</Button>
-              </Center>
+              <PlanLastStepForm
+                planId={planId!}
+                nextStep={() => setActive(3)}
+              />
             </Stepper.Step>
             <Stepper.Completed>
-              Completed, click back button to get to previous step
+              <Stack align="center">
+                <Title>Der Plan wurde erfolgreich erstellt.</Title>
+                <Text>Du wirst gleich weitergeleitet...</Text>
+              </Stack>
             </Stepper.Completed>
           </Stepper>
         </Container>
@@ -92,6 +98,7 @@ export const getServerSideProps = async (
     props: {
       trpcState: ssg.dehydrate(),
       draftPlanId: draft?.id ?? null,
+      draftTemplateId: draft?.templateId ?? null,
     },
   };
 };

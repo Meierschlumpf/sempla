@@ -18,18 +18,18 @@ model Appointment {
     id                   String                @id @default(cuid())
     start                DateTime
     end                  DateTime
-    type                 String // "lesson", "vacation", "holiday", "excursion", "event"
+    type                 String // "lesson", "vacation", "holiday", "excursion", "event", "early"
     createdAt            DateTime              @default(now())
     updatedAt            DateTime              @updatedAt
     isPinned             Boolean               @default(false)
     lessonAppointment    LessonAppointment?
     excursionAppointment ExcursionAppointment?
     eventAppointment     EventAppointment?
-    plan                 Plan                  @relation(fields: [planId], references: [id])
-    planId               String
-    vacationAppointments VacationAppointment[]
-    holidayAppointments  HolidayAppointment[]
-    earlydayAppointments EarlydayAppointment[]
+    vacationAppointments VacationAppointment?
+    holidayAppointments  HolidayAppointment?
+    earlydayAppointments EarlydayAppointment?
+    plan                 Plan?                 @relation(fields: [planId], references: [id])
+    planId               String?
     template             PlanTemplate?         @relation(fields: [templateId], references: [id])
     templateId           String?
 }

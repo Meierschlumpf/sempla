@@ -1,4 +1,5 @@
 import {
+  Button,
   Card,
   Grid,
   Group,
@@ -54,7 +55,7 @@ export const PlanSecondStepForm = ({
 }: PlanSecondStepFormProps) => {
   const { primaryColor, colors } = useMantineTheme();
   const { mutateAsync: selectTemplate, isLoading } =
-    api.plan.selectTemplate.useMutation();
+    api.plan.selectTemplateAndGenerateAppointments.useMutation();
   const { data: templates } = api.template.forPlan.useQuery({
     planId: planId,
   });

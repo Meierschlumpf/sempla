@@ -361,6 +361,61 @@ export const topicsRouter = createTRPCRouter({
         });
       }
     }),
+
+  addToEnd: publicProcedure
+    .input(
+      z
+        .object({
+          start: z.date(),
+          duration: z.number().positive(),
+          planId: z.string(),
+        })
+        .and(
+          z
+            .object({ topicId: z.string(), name: z.null() })
+            .or(z.object({ name: z.string(), topicId: z.null() }))
+        )
+    )
+    .mutation(async ({ ctx, input }) => {
+      let topicId = input.topicId;
+
+      if (input.topicId === null) {
+        const topic = await createOrGetTopicByName(ctx.prisma, input.name);
+        topicId = topic.id;
+      }
+
+      const appointments = await ctx.prisma.lessonAppointment.findMany({
+        where: {
+          parent: {
+            start: {
+              gte: input.start,
+            },
+            planId: input.planId,
+          },
+        },
+        orderBy: {
+          parent: {
+            start: "asc",
+          },
+        },
+        take: input.duration,
+        select: {
+          id: true,
+          parent: true,
+        },
+      });
+
+      await ctx.prisma.lessonAppointment.updateMany({
+        where: {
+          id: {
+            in: appointments.map((a) => a.id),
+          },
+        },
+        data: {
+          topicId,
+        },
+      });
+    }),
 });
 
 export const createOrGetTopicByName = async (

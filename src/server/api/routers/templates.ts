@@ -48,12 +48,12 @@ export const templateRouter = createTRPCRouter({
         include: {
           plans: {
             select: {
-              _count: true,
+              id: true,
             },
           },
           appointments: {
             select: {
-              _count: true,
+              id: true,
             },
           },
         },
@@ -67,10 +67,7 @@ export const templateRouter = createTRPCRouter({
         areaId: null,
         timeSpanId: plan.timeSpanId,
         plans: emptyTemplateUsage.map(() => ({
-          _count: {
-            appointments: 0,
-            lessons: 0,
-          },
+          id: "",
         })),
         appointments: [],
       };
