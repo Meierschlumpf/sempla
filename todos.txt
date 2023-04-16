@@ -1,0 +1,29 @@
+It should not be allowed to create a plan for a class that already has a plan.
+Validation should be added for all forms
+The start- and endTime of the plans should be read from the database for the plan overview page.
+The link of the plan overview page should redirect teachers to another page.
+Teachers should not be displayed the subject as main title but the class. And the subject should be displayed as a subtitle as a replacement for the teacher.
+It would make sense to add the weekday of the plan to the plan overview page.
+The plan overview page should be sorted by the weekday and time.
+The plan items should have the homeworks and tasks aligned to the right.
+Appointments of the same day should be grouped together.
+Appointments from the template should be displayed in the plan overview page.
+The weekday should be displayed for all appointment dates.
+Some easy way to add templates should be added.
+The modal for the subject not found (creation page) should be added.
+The topic selection step might need a styling overhaul.
+Fix all typescript errors.
+Add pinned appointments.
+Add a way to delete appointments.
+Add a way to edit appointments.
+Add a way to edit plans.
+Add a way to delete plans.
+Implement many-appointments-selection actions
+(Add a way to add appointments between two appointments)
+Add more actions for appointments.
+Add logic to increase lenght of topics
+Add more actions for topics.
+Add materials.
+Add authentication with roles.
+Add profile page.
+Improve performance of different db calls (maybe use bulk operations or transactions?)
