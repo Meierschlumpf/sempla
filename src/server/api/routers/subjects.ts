@@ -10,6 +10,46 @@ export const subjectsRouter = createTRPCRouter({
       },
     });
   }),
+  available: publicProcedure
+    .input(
+      z.object({
+        areaId: z.string(),
+        timeSpanId: z.string(),
+        classId: z.string(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const subjects = await ctx.prisma.subject.findMany({
+        include: {
+          plans: true,
+        },
+        where: {
+          NOT: {
+            plans: {
+              some: {
+                areaId: input.areaId,
+                timeSpanId: input.timeSpanId,
+                classId: input.classId,
+              },
+            },
+          },
+          areas: {
+            some: {
+              id: input.areaId,
+            },
+          },
+        },
+        orderBy: {
+          name: "asc",
+        },
+      });
+
+      return subjects.map((subject) => ({
+        id: subject.id,
+        name: subject.name,
+        routeName: subject.routeName,
+      }));
+    }),
   byId: publicProcedure
     .input(z.object({ id: z.string().cuid() }))
     .query(async ({ ctx, input }) => {

@@ -27,6 +27,11 @@ model Appointment {
     eventAppointment     EventAppointment?
     plan                 Plan                  @relation(fields: [planId], references: [id])
     planId               String
+    vacationAppointments VacationAppointment[]
+    holidayAppointments  HolidayAppointment[]
+    earlydayAppointments EarlydayAppointment[]
+    template             PlanTemplate?         @relation(fields: [templateId], references: [id])
+    templateId           String?
 }
 
 model LessonAppointment {
@@ -53,6 +58,24 @@ model EventAppointment {
     description String
 }
 
+model VacationAppointment {
+    id     String      @id
+    parent Appointment @relation(fields: [id], references: [id])
+    name   String
+}
+
+model HolidayAppointment {
+    id     String      @id
+    parent Appointment @relation(fields: [id], references: [id])
+    name   String
+}
+
+model EarlydayAppointment {
+    id     String      @id
+    parent Appointment @relation(fields: [id], references: [id])
+    name   String
+}
+
 model Subject {
     id                 String              @id @default(cuid())
     name               String
@@ -60,6 +83,7 @@ model Subject {
     icon               String
     lessonAppointments LessonAppointment[]
     plans              Plan[]
+    areas              Area[]              @relation(name: "SubjectAreas")
 }
 
 model Topic {
@@ -69,15 +93,19 @@ model Topic {
 }
 
 model Area {
-    id        String @id @default(cuid())
-    name      String @unique
-    routeName String @unique
+    id        String         @id @default(cuid())
+    name      String         @unique
+    routeName String         @unique
     plans     Plan[]
+    classes   Class[]
+    subjects  Subject[]      @relation(name: "SubjectAreas")
+    templates PlanTemplate[]
 }
 
 model Plan {
     id           String        @id @default(cuid())
     isPublic     Boolean       @default(false)
+    isDraft      Boolean       @default(true)
     appointments Appointment[]
     subjectId    String
     subject      Subject       @relation(fields: [subjectId], references: [id])
@@ -85,6 +113,55 @@ model Plan {
     area         Area          @relation(fields: [areaId], references: [id])
     creatorId    String
     creator      Teacher       @relation(fields: [creatorId], references: [id])
+    timeSpanId   String
+    timeSpan     TimeSpan      @relation(fields: [timeSpanId], references: [id])
+    classId      String
+    class        Class         @relation(fields: [classId], references: [id])
+    templateId   String?
+    template     PlanTemplate? @relation(fields: [templateId], references: [id])
+    lessons      PlanLesson[]
+}
+
+model PlanTemplate {
+    id           String        @id @default(cuid())
+    isDraft      Boolean       @default(true)
+    name         String
+    description  String
+    appointments Appointment[]
+    areaId       String?
+    area         Area?         @relation(fields: [areaId], references: [id])
+    timeSpanId   String
+    timeSpan     TimeSpan      @relation(fields: [timeSpanId], references: [id])
+    plans        Plan[]
+
+    @@unique([name, areaId, timeSpanId])
+}
+
+model PlanLesson {
+    id        String @id @default(cuid())
+    weekDay   Int // 0 = Monday, 1 = Tuesday, ...
+    startTime Int // minutes since midnight
+    endTime   Int // minutes since midnight
+    planId    String
+    plan      Plan   @relation(fields: [planId], references: [id])
+}
+
+model Class {
+    id        String @id @default(cuid())
+    name      String @unique
+    routeName String @unique
+    areaId    String
+    area      Area   @relation(fields: [areaId], references: [id])
+    plans     Plan[]
+}
+
+model TimeSpan {
+    id           String         @id @default(cuid())
+    name         String         @unique
+    start        DateTime
+    end          DateTime
+    plans        Plan[]
+    PlanTemplate PlanTemplate[]
 }
 
 model Teacher {

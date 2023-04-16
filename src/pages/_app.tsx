@@ -30,7 +30,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
         withNormalizeCSS
         theme={{
           /** Put your mantine theme override here */
-          colorScheme: "light",
+          colorScheme: "dark",
           primaryColor: "indigo",
         }}
       >

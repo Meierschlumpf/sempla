@@ -14,6 +14,8 @@ import { type GetServerSidePropsContext, type NextPage } from "next";
 import Head from "next/head";
 import { Layout } from "~/components/layout/layout";
 import { CurrentPlanList } from "~/components/plan/list/current";
+import { FuturePlanList } from "~/components/plan/list/future";
+import { PastPlanList } from "~/components/plan/list/past";
 import { createSsgHelper } from "~/helpers/createSsgHelper";
 import {
   getSearchParamWithFallback,
@@ -75,6 +77,14 @@ const Page: NextPage<{
             <Tabs.Panel value="current">
               <CurrentPlanList search={debouncedSearch} areaId={areaId} />
             </Tabs.Panel>
+
+            <Tabs.Panel value="past">
+              <PastPlanList search={debouncedSearch} areaId={areaId} />
+            </Tabs.Panel>
+
+            <Tabs.Panel value="future">
+              <FuturePlanList search={debouncedSearch} areaId={areaId} />
+            </Tabs.Panel>
           </Tabs>
         </Container>
       </Layout>
@@ -91,14 +101,17 @@ type TabProps = {
 };
 
 const Tab = (props: TabProps) => {
-  const { primaryColor, colors } = useMantineTheme();
+  const { primaryColor, colors, colorScheme } = useMantineTheme();
 
   return (
     <Tabs.Tab
       value={props.value}
       rightSection={
         props.count > 0 && (
-          <Badge bg={colors[primaryColor]?.[1]} px={6}>
+          <Badge
+            bg={colorScheme === "light" ? colors[primaryColor]?.[1] : undefined}
+            px={6}
+          >
             {props.count}
           </Badge>
         )

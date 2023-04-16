@@ -10,6 +10,7 @@ import {
 import { IconUser, IconDoor } from "@tabler/icons-react";
 import Link from "next/link";
 import { UserHoverCard } from "~/components/user/user-hover-card";
+import { dateString } from "~/helpers/date";
 import { type RouterOutputs } from "~/utils/api";
 
 type PlanCardProps = {
@@ -21,7 +22,15 @@ export const PlanCard = ({ plan }: PlanCardProps) => {
 
   return (
     <UnstyledButton w="100%">
-      <Card withBorder component={Link} href={`/plans/${plan.id}`}>
+      <Card
+        withBorder
+        component={Link}
+        href={`/plans/display/${plan.area.routeName}/${
+          plan.subject.routeName
+        }?start=${dateString(plan.timeSpan.start)}&end=${dateString(
+          plan.timeSpan.end
+        )}`}
+      >
         <Stack spacing={4}>
           <Group position="apart" noWrap>
             <Text

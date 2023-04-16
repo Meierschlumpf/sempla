@@ -4,6 +4,9 @@ import { subjectsRouter } from "./routers/subjects";
 import { topicsRouter } from "./routers/topics";
 import { planRouter } from "./routers/plans";
 import { areaRouter } from "./routers/areas";
+import { timeSpanRouter } from "./routers/timeSpans";
+import { classRouter } from "./routers/classes";
+import { templateRouter } from "./routers/templates";
 
 /**
  * This is the primary router for your server.
@@ -16,6 +19,9 @@ export const appRouter = createTRPCRouter({
   topic: topicsRouter,
   plan: planRouter,
   area: areaRouter,
+  timeSpan: timeSpanRouter,
+  class: classRouter,
+  template: templateRouter,
 });
 
 // export type definition of API
