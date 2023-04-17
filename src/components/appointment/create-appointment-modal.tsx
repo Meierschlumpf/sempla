@@ -19,6 +19,7 @@ import { DatePickerInput, TimeInput } from "@mantine/dates";
 import {
   createFormContext,
   useForm,
+  zodResolver,
   type UseFormReturnType,
 } from "@mantine/form";
 import { useMediaQuery } from "@mantine/hooks";
@@ -172,6 +173,100 @@ const handleSubmitMiddleware = (
 };
 type ModalInnerProps = { planId: string };
 
+const generateSharedFormSchema = (withEndDate: boolean) =>
+  z
+    .object({
+      startDate: z.date({
+        required_error: "common.required",
+        invalid_type_error: "common.invalidDate",
+      }),
+      endDate: withEndDate
+        ? z.date({
+            required_error: "common.required",
+            invalid_type_error: "common.invalidDate",
+          })
+        : z.undefined().or(z.null()),
+      startTime: z
+        .string({
+          required_error: "common.required",
+        })
+        .regex(/^\d{2}:\d{2}$/, {
+          message: "common.invalidTime",
+        }),
+      endTime: z
+        .string({
+          required_error: "common.required",
+        })
+        .regex(/^\d{2}:\d{2}$/, {
+          message: "common.invalidTime",
+        }),
+    })
+    .refine((v) => (v.endDate ? v.endDate > v.startDate : true), {
+      path: ["endDate"],
+      message: "common.endBeforeStart",
+    });
+
+const lessonFormSchema = z
+  .object({
+    topicId: z
+      .string({
+        required_error: "common.required",
+      })
+      .cuid()
+      .or(
+        z.literal("new", {
+          required_error: "common.required",
+        })
+      ),
+  })
+  .and(generateSharedFormSchema(false));
+
+const eventFormSchema = z
+  .object({
+    name: z
+      .string({
+        required_error: "common.required",
+      })
+      .min(3, {
+        message: "common.minLength",
+      })
+      .max(64, {
+        message: "common.maxLength",
+      }),
+    description: z.string({
+      required_error: "common.required",
+    }),
+  })
+  .and(generateSharedFormSchema(true));
+
+const excursionFormSchema = z
+  .object({
+    name: z
+      .string({
+        required_error: "common.required",
+      })
+      .min(3, {
+        message: "common.minLength",
+      })
+      .max(64, {
+        message: "common.maxLength",
+      }),
+    description: z.string({
+      required_error: "common.required",
+    }),
+    location: z
+      .string({
+        required_error: "common.required",
+      })
+      .min(3, {
+        message: "common.minLength",
+      })
+      .max(64, {
+        message: "common.maxLength",
+      }),
+  })
+  .and(generateSharedFormSchema(false));
+
 const CreateLessonForm = ({
   context,
   id,
@@ -181,7 +276,12 @@ const CreateLessonForm = ({
   const [createdTopic, setCreatedTopic] = useState<SelectItem | null>(null);
   const utils = api.useContext();
   const { mutate } = api.appointment.create.useMutation();
-  const form = useForm<LessonFormType>();
+  const form = useForm<LessonFormType>({
+    validate: zodResolver(lessonFormSchema),
+    validateInputOnBlur: true,
+  });
+
+  console.log(form.errors);
 
   const handleSubmit = (values: LessonFormType) => {
     const { start, end } = handleSubmitMiddleware(values, false);
@@ -318,7 +418,9 @@ const CreateEventForm = ({
 }: ContextModalProps<ModalInnerProps>) => {
   const utils = api.useContext();
   const { mutate } = api.appointment.create.useMutation();
-  const form = useForm<EventFormType>();
+  const form = useForm<EventFormType>({
+    validate: zodResolver(eventFormSchema),
+  });
 
   const handleSubmit = (values: EventFormType) => {
     const { start, end } = handleSubmitMiddleware(values, true);
@@ -377,7 +479,9 @@ const CreateExcursionForm = ({
 }: ContextModalProps<ModalInnerProps>) => {
   const utils = api.useContext();
   const { mutate } = api.appointment.create.useMutation();
-  const form = useForm<ExcursionFormType>();
+  const form = useForm<ExcursionFormType>({
+    validate: zodResolver(excursionFormSchema),
+  });
 
   const handleSubmit = (values: ExcursionFormType) => {
     const { start, end } = handleSubmitMiddleware(values, false);

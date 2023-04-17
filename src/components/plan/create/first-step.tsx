@@ -11,10 +11,11 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { TimeInput } from "@mantine/dates";
-import { useForm } from "@mantine/form";
+import { useForm, zodResolver } from "@mantine/form";
 import { randomId } from "@mantine/hooks";
 import { openConfirmModal } from "@mantine/modals";
 import { IconTrash } from "@tabler/icons-react";
+import { z } from "zod";
 import { getSchoolDaySelectionData } from "~/constants/schoolDays";
 import {
   minutesFromMidnightToTimeString,
@@ -42,6 +43,57 @@ type FormType = {
   }[];
 };
 
+const formValidationSchema = z.object({
+  timeSpanId: z
+    .string({
+      required_error: "common.required",
+    })
+    .cuid(),
+  areaId: z
+    .string({
+      required_error: "common.required",
+    })
+    .cuid(),
+  classId: z
+    .string({
+      required_error: "common.required",
+    })
+    .cuid(),
+  subjectId: z
+    .string({
+      required_error: "common.required",
+    })
+    .cuid(),
+  lessons: z
+    .array(
+      z.object({
+        id: z.string().cuid().nullable(),
+        weekDay: z
+          .string({
+            required_error: "common.required",
+          })
+          .regex(/^[0-6]$/),
+        startTime: z
+          .string({
+            required_error: "common.required",
+          })
+          .regex(/^[0-9]{2}:[0-9]{2}$/, {
+            message: "common.invalidTime",
+          }),
+        endTime: z
+          .string({
+            required_error: "common.required",
+          })
+          .regex(/^[0-9]{2}:[0-9]{2}$/, {
+            message: "common.invalidTime",
+          }),
+      })
+    )
+    .min(1, {
+      message: "lessons.min",
+    }),
+});
+
 export const PlanFirstStepForm = ({
   nextSteep,
   planId,
@@ -63,25 +115,39 @@ export const PlanFirstStepForm = ({
           setPlanId(null);
           form.reset();
           return;
+        } else {
+          form.setValues({
+            timeSpanId: data.timeSpanId,
+            areaId: data.areaId,
+            classId: data.classId,
+            subjectId: data.subjectId,
+            lessons: data.lessons.map((lesson) => ({
+              key: randomId(),
+              id: lesson.id,
+              weekDay: lesson.weekDay.toString(),
+              startTime: minutesFromMidnightToTimeString(lesson.startTime),
+              endTime: minutesFromMidnightToTimeString(lesson.endTime),
+            })),
+          });
         }
       },
     }
   );
   const form = useForm<FormType>({
     initialValues: {
-      timeSpanId: currentPlan?.timeSpanId ?? null!,
-      areaId: currentPlan?.areaId ?? null!,
-      classId: currentPlan?.classId ?? null!,
-      subjectId: currentPlan?.subjectId ?? null!,
+      timeSpanId: currentPlan?.timeSpanId ?? undefined!,
+      areaId: currentPlan?.areaId ?? undefined!,
+      classId: currentPlan?.classId ?? undefined!,
+      subjectId: currentPlan?.subjectId ?? undefined!,
       lessons:
         !currentPlan || currentPlan?.lessons.length === 0
           ? [
               {
                 key: randomId(),
                 id: null,
-                weekDay: null!,
-                startTime: null!,
-                endTime: null!,
+                weekDay: undefined!,
+                startTime: "",
+                endTime: "",
               },
             ]
           : currentPlan.lessons.map((lesson) => ({
@@ -92,6 +158,8 @@ export const PlanFirstStepForm = ({
               endTime: minutesFromMidnightToTimeString(lesson.endTime),
             })),
     },
+    validate: zodResolver(formValidationSchema),
+    validateInputOnBlur: true,
   });
   const { data: classes } = api.class.byAreaId.useQuery(
     {
@@ -204,7 +272,21 @@ export const PlanFirstStepForm = ({
           {
             onSuccess: () => {
               setPlanId(null);
-              form.reset();
+              form.setValues({
+                timeSpanId: undefined!,
+                areaId: undefined!,
+                classId: undefined!,
+                subjectId: undefined!,
+                lessons: [
+                  {
+                    key: randomId(),
+                    id: null,
+                    weekDay: undefined!,
+                    startTime: "",
+                    endTime: "",
+                  },
+                ],
+              });
             },
           }
         );
@@ -246,7 +328,7 @@ export const PlanFirstStepForm = ({
           <Select
             label="Zeitspanne"
             placeholder="Zeitspanne auswählen"
-            required
+            withAsterisk
             data={
               timeSpans?.map((x) => ({
                 value: x.id,
@@ -267,7 +349,7 @@ export const PlanFirstStepForm = ({
           <Select
             label="Bereich"
             placeholder="Bereich auswählen"
-            required
+            withAsterisk
             searchable
             data={areas?.map((x) => ({ value: x.id, label: x.name })) ?? []}
             {...form.getInputProps("areaId")}
@@ -284,7 +366,7 @@ export const PlanFirstStepForm = ({
           <Select
             label="Klasse"
             placeholder="Klasse auswählen"
-            required
+            withAsterisk
             searchable
             data={classes?.map((x) => ({ value: x.id, label: x.name })) ?? []}
             styles={{
@@ -310,7 +392,7 @@ export const PlanFirstStepForm = ({
           <Select
             label="Fach"
             placeholder="Fach auswählen"
-            required
+            withAsterisk
             searchable
             data={subjectsData}
             nothingFound={
@@ -367,7 +449,7 @@ export const PlanFirstStepForm = ({
                   <Select
                     label="Tag"
                     placeholder="Tag auswählen"
-                    required
+                    withAsterisk
                     data={schoolDaySelectionData}
                     {...form.getInputProps(`lessons.${index}.weekDay`)}
                   />
@@ -375,7 +457,7 @@ export const PlanFirstStepForm = ({
 
                 <Grid.Col span={3}>
                   <TimeInput
-                    required
+                    withAsterisk
                     label="Startzeit"
                     {...form.getInputProps(`lessons.${index}.startTime`)}
                   />
@@ -383,7 +465,7 @@ export const PlanFirstStepForm = ({
 
                 <Grid.Col span={3}>
                   <TimeInput
-                    required
+                    withAsterisk
                     label="Endzeit"
                     {...form.getInputProps(`lessons.${index}.endTime`)}
                   />
@@ -397,7 +479,7 @@ export const PlanFirstStepForm = ({
                     : "Lektion entfernen"
                 }
               >
-                <Group mt={28}>
+                <Group align="start" mt={28}>
                   <ActionIcon
                     color="red"
                     variant="subtle"

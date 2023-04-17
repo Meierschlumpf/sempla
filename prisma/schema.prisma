@@ -143,7 +143,7 @@ model PlanLesson {
     startTime Int // minutes since midnight
     endTime   Int // minutes since midnight
     planId    String
-    plan      Plan   @relation(fields: [planId], references: [id])
+    plan      Plan   @relation(fields: [planId], references: [id], onDelete: Cascade)
 }
 
 model Class {
