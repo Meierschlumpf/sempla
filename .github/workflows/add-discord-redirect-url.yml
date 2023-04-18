@@ -1,0 +1,19 @@
+name: Add Discord Redirect Url
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  main:
+    name: Main
+    if: ${{ github.event.issue.pull_request }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🚚 Let's go
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - run:
+          - node .github/workflows/add-discord-redirect-url.js ${{ github.event.comment.body }}
