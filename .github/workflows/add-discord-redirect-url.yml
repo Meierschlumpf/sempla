@@ -16,4 +16,4 @@ jobs:
         with:
           node-version: 16
       - run:
-          - node .github/workflows/add-discord-redirect-url.js ${{ github.event.comment.body }}
+          - node .github/scripts/add-discord-redirect-url.js ${{ github.event.comment.body }}
