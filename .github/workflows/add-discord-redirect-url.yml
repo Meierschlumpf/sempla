@@ -14,4 +14,4 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 16
-      - run: "node .github/scripts/add-discord-redirect-url.js ${{ github.event.comment.body }}""
+      - run: "node .github/scripts/add-discord-redirect-url.js ${{ github.event.comment.body }}"
