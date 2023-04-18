@@ -10,11 +10,8 @@ jobs:
     if: ${{ github.event.issue.pull_request }}
     runs-on: ubuntu-latest
     steps:
-      - name: 🚚 Let's go
-        uses: actions/checkout@v3
-      - name: ⚡️ Fixed NodeJS
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: 16
-      - name: Run
-        run: node .github/scripts/add-discord-redirect-url.js ${{ github.event.comment.body }}
+      - run: "node .github/scripts/add-discord-redirect-url.js ${{ github.event.comment.body }}""
