@@ -5,7 +5,7 @@ const email = process.env.DISCORD_EMAIL;
 const password = process.env.DISCORD_PASSWORD;
 
 const visitPreview = commentBody.split("[Visit Preview](")[1].split(")")[0];
-
+//
 const redirectUrl = `${visitPreview}/api/auth`;
 
 (async () => {
