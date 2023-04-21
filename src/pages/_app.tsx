@@ -1,5 +1,3 @@
-import { type Session } from "next-auth";
-import { SessionProvider } from "next-auth/react";
 import { type AppType } from "next/app";
 
 import { api } from "~/utils/api";
@@ -11,14 +9,11 @@ import Head from "next/head";
 import { modals } from "~/components/modals";
 import "~/styles/globals.css";
 
-const MyApp: AppType<{ session: Session | null }> = ({
-  Component,
-  pageProps: { session, ...pageProps },
-}) => {
+const MyApp: AppType = ({ Component, pageProps }) => {
   return (
     <>
       <Head>
-        <title>Page title</title>
+        <title>Sempla</title>
         <meta
           name="viewport"
           content="minimum-scale=1, initial-scale=1, width=device-width"
@@ -40,10 +35,8 @@ const MyApp: AppType<{ session: Session | null }> = ({
             closeButtonProps: { "aria-label": "Close modal" },
           }}
         >
-          <SessionProvider session={session}>
-            <Notifications position="bottom-right" />
-            <Component {...pageProps} />
-          </SessionProvider>
+          <Notifications position="bottom-right" />
+          <Component {...pageProps} />
         </ModalsProvider>
       </MantineProvider>
     </>

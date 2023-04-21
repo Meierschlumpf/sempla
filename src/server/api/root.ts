@@ -7,6 +7,7 @@ import { areaRouter } from "./routers/areas";
 import { timeSpanRouter } from "./routers/timeSpans";
 import { classRouter } from "./routers/classes";
 import { templateRouter } from "./routers/templates";
+import { userRouter } from "./routers/user";
 
 /**
  * This is the primary router for your server.
@@ -22,6 +23,7 @@ export const appRouter = createTRPCRouter({
   timeSpan: timeSpanRouter,
   class: classRouter,
   template: templateRouter,
+  user: userRouter,
 });
 
 // export type definition of API

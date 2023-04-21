@@ -8,9 +8,11 @@ import {
   Title,
 } from "@mantine/core";
 import { IconSchool } from "@tabler/icons-react";
+import { type GetServerSideProps } from "next";
 import { signIn } from "next-auth/react";
 import Head from "next/head";
 import { MicrosoftLogo } from "~/components/logos/microsoft-logo";
+import { getServerSession } from "~/server/auth/get-session";
 
 const Page = () => {
   return (
@@ -53,3 +55,19 @@ const Page = () => {
 };
 
 export default Page;
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  // redirection when session already defined
+  const session = await getServerSession(context);
+  if (session)
+    return {
+      redirect: {
+        permanent: false,
+        destination: "/",
+      },
+    };
+
+  return {
+    props: {},
+  };
+};
