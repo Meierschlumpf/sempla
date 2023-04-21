@@ -17,6 +17,7 @@ import {
   IconUser,
   type TablerIconsProps,
 } from "@tabler/icons-react";
+import { signOut } from "next-auth/react";
 import Link from "next/link";
 
 const items = [
@@ -41,7 +42,9 @@ export function DefaultNavbar() {
       })}
     >
       <Center>
-        <IconSchool size={48} color={colors.gray[0]} />
+        <Link href="/">
+          <IconSchool size={48} color={colors.gray[0]} />
+        </Link>
       </Center>
       <Navbar.Section grow mt={50}>
         <Stack justify="center" spacing={0}>
@@ -55,7 +58,15 @@ export function DefaultNavbar() {
             label="Change account"
             onClick={() => []}
           />
-          <NavbarLink icon={IconLogout} label="Logout" onClick={() => []} />
+          <NavbarLink
+            icon={IconLogout}
+            label="Logout"
+            onClick={() =>
+              void signOut({
+                callbackUrl: "/login",
+              })
+            }
+          />
         </Stack>
       </Navbar.Section>
     </Navbar>

@@ -41,7 +41,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
           }}
         >
           <SessionProvider session={session}>
-            <Notifications position="bottom-center" />
+            <Notifications position="bottom-right" />
             <Component {...pageProps} />
           </SessionProvider>
         </ModalsProvider>
