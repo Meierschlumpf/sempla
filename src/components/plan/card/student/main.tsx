@@ -7,10 +7,12 @@ import {
   Text,
   Tooltip,
 } from "@mantine/core";
+import { type PlanLesson } from "@prisma/client";
 import { IconUser, IconDoor } from "@tabler/icons-react";
 import Link from "next/link";
 import { UserHoverCard } from "~/components/user/user-hover-card";
 import { dateString } from "~/helpers/date";
+import { minutesFromMidnightToTimeString } from "~/helpers/time";
 import { type RouterOutputs } from "~/utils/api";
 
 type PlanCardProps = {
@@ -46,9 +48,10 @@ export const PlanCard = ({ plan }: PlanCardProps) => {
               size="sm"
               style={{
                 whiteSpace: "nowrap",
+                lineHeight: 1,
               }}
             >
-              08:15 - 09:45
+              {lessonsDisplay(plan.lessons)}
             </Text>
           </Group>
           <Group>
@@ -79,3 +82,19 @@ export const PlanCard = ({ plan }: PlanCardProps) => {
     </UnstyledButton>
   );
 };
+
+export const lessonsDisplay = (lessons: PlanLesson[]) => {
+  const lesson = lessons[0];
+  if (!lesson) return null;
+  if (lessons.length === 1)
+    return (
+      weekdays[lesson.weekDay]! +
+      ", " +
+      minutesFromMidnightToTimeString(lesson.startTime) +
+      " - " +
+      minutesFromMidnightToTimeString(lesson.endTime)
+    );
+  return `${lessons.length} Lektionen`;
+};
+
+const weekdays = ["Mo", "Di", "Mi", "Do", "Fr", "Sa"];

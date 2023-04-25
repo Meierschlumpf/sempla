@@ -37,7 +37,10 @@ export const planRouter = createTRPCRouter({
     }),
   current: publicProcedure
     .input(
-      z.object({ search: z.string().nullable(), areaId: z.string().nullable() })
+      z.object({
+        search: z.string().nullable(),
+        areaId: z.string().nullable(),
+      })
     )
     .query(async ({ ctx, input }) => {
       return await ctx.prisma.plan.findMany({
@@ -46,15 +49,28 @@ export const planRouter = createTRPCRouter({
           area: true,
           creator: true,
           timeSpan: true,
+          lessons: true,
+          class: true,
         },
         where: {
-          subject: !input.search
+          OR: !input.search
             ? undefined
-            : {
-                name: {
-                  contains: input.search,
+            : [
+                {
+                  subject: {
+                    name: {
+                      contains: input.search,
+                    },
+                  },
                 },
-              },
+                {
+                  class: {
+                    name: {
+                      contains: input.search,
+                    },
+                  },
+                },
+              ],
           area: !input.areaId
             ? undefined
             : {
@@ -82,15 +98,28 @@ export const planRouter = createTRPCRouter({
           area: true,
           creator: true,
           timeSpan: true,
+          lessons: true,
+          class: true,
         },
         where: {
-          subject: !input.search
+          OR: !input.search
             ? undefined
-            : {
-                name: {
-                  contains: input.search,
+            : [
+                {
+                  subject: {
+                    name: {
+                      contains: input.search,
+                    },
+                  },
                 },
-              },
+                {
+                  class: {
+                    name: {
+                      contains: input.search,
+                    },
+                  },
+                },
+              ],
           area: !input.areaId
             ? undefined
             : {
@@ -115,15 +144,28 @@ export const planRouter = createTRPCRouter({
           area: true,
           creator: true,
           timeSpan: true,
+          lessons: true,
+          class: true,
         },
         where: {
-          subject: !input.search
+          OR: !input.search
             ? undefined
-            : {
-                name: {
-                  contains: input.search,
+            : [
+                {
+                  subject: {
+                    name: {
+                      contains: input.search,
+                    },
+                  },
                 },
-              },
+                {
+                  class: {
+                    name: {
+                      contains: input.search,
+                    },
+                  },
+                },
+              ],
           area: !input.areaId
             ? undefined
             : {

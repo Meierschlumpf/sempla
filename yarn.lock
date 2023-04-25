@@ -319,6 +319,13 @@
     "@mantine/utils" "6.0.7"
     react-transition-group "4.4.2"
 
+"@mantine/spotlight@^6.0.8":
+  version "6.0.8"
+  resolved "https://registry.yarnpkg.com/@mantine/spotlight/-/spotlight-6.0.8.tgz#6e4a117ff773c7756d3e0793fd5c25202a19b17a"
+  integrity sha512-LUUaPPrUFhai6A4MSEPzI9iaFpEBaifISHI772rpkGJMrnSkzhN6NR+kG7V7GmoTN55yBi+R0t6uzuJEZMi0Lg==
+  dependencies:
+    "@mantine/utils" "6.0.8"
+
 "@mantine/ssr@6.0.7":
   version "6.0.7"
   resolved "https://registry.yarnpkg.com/@mantine/ssr/-/ssr-6.0.7.tgz#4fdb8d88c4cacf27bedf65060e866213c5c50d88"
@@ -346,6 +353,11 @@
   version "6.0.7"
   resolved "https://registry.yarnpkg.com/@mantine/utils/-/utils-6.0.7.tgz#fcbc9c809c33bd9c96fd12d7ca63d0c19550bafd"
   integrity sha512-XMm66GNn9hXnc9s/twXzL9iqhzM8HLVOyuKDo4WUn/ZM6NEJYJJVcTTlSIXOPq9AWo8bI76vbAHkIry1aEbgmg==
+
+"@mantine/utils@6.0.8":
+  version "6.0.8"
+  resolved "https://registry.yarnpkg.com/@mantine/utils/-/utils-6.0.8.tgz#3e77f7ae7ab6c06555a619e137fc62942d95c109"
+  integrity sha512-G7omM5XjnGzXLiFU/r2yOJrixDFnY2pUkqD38cV9e/Qa6KFEErp4mNb+rhkSHafCnvfwBiNcdryZwEhJTtuC+Q==
 
 "@next-auth/prisma-adapter@^1.0.5":
   version "1.0.5"

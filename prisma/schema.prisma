@@ -200,14 +200,23 @@ model Session {
     user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+model ProfileImage {
+    id     String @id @default(cuid())
+    url    String
+    size   String // sm, md, lg
+    userId String
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
 model User {
-    id            String    @id @default(cuid())
+    id            String         @id @default(cuid())
     name          String?
-    email         String?   @unique
-    emailVerified DateTime?
     image         String?
+    email         String?        @unique
+    emailVerified DateTime?
     accounts      Account[]
     sessions      Session[]
+    profileImages ProfileImage[]
 }
 
 model VerificationToken {
