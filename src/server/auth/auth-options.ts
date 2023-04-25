@@ -3,7 +3,7 @@ import {
   getServerSession,
   type NextAuthOptions,
   type DefaultSession,
-  TokenSet,
+  type TokenSet,
 } from "next-auth";
 import AzureADProvider from "next-auth/providers/azure-ad";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
@@ -127,8 +127,7 @@ export const authOptions: NextAuthOptions = {
      */
   ],
   events: {
-    async signOut({ session, token }) {
-      console.log("signout", session, token);
+    async signOut({ session }) {
       if (session?.userId) {
         await prisma.account.updateMany({
           where: {
@@ -147,10 +146,35 @@ export const authOptions: NextAuthOptions = {
           userId: user.id,
           provider: "azure-ad",
         },
+        include: {
+          user: true,
+        },
       });
 
       if (dbAccount == null || !account) {
         return;
+      }
+
+      if (!dbAccount.user.firstName || !dbAccount.user.lastName) {
+        const response = await fetch(`https://graph.microsoft.com/v1.0/me`, {
+          headers: {
+            Authorization: `Bearer ${account.access_token!}`,
+          },
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) throw data;
+
+        await prisma.user.update({
+          where: {
+            id: user.id,
+          },
+          data: {
+            firstName: data.givenName,
+            lastName: data.surname,
+          },
+        });
       }
 
       await prisma.account.update({

@@ -25,18 +25,18 @@ model Appointment {
     lessonAppointment    LessonAppointment?
     excursionAppointment ExcursionAppointment?
     eventAppointment     EventAppointment?
-    vacationAppointments VacationAppointment?
-    holidayAppointments  HolidayAppointment?
-    earlydayAppointments EarlydayAppointment?
-    plan                 Plan?                 @relation(fields: [planId], references: [id])
+    vacationAppointment  VacationAppointment?
+    holidayAppointment   HolidayAppointment?
+    earlydayAppointment  EarlydayAppointment?
+    plan                 Plan?                 @relation(fields: [planId], references: [id], onDelete: Cascade)
     planId               String?
-    template             PlanTemplate?         @relation(fields: [templateId], references: [id])
+    template             PlanTemplate?         @relation(fields: [templateId], references: [id], onDelete: Cascade)
     templateId           String?
 }
 
 model LessonAppointment {
     id        String      @id
-    parent    Appointment @relation(fields: [id], references: [id])
+    parent    Appointment @relation(fields: [id], references: [id], onDelete: Cascade)
     subjectId String
     subject   Subject     @relation(fields: [subjectId], references: [id])
     topicId   String?
@@ -45,7 +45,7 @@ model LessonAppointment {
 
 model ExcursionAppointment {
     id          String      @id
-    parent      Appointment @relation(fields: [id], references: [id])
+    parent      Appointment @relation(fields: [id], references: [id], onDelete: Cascade)
     name        String
     description String
     location    String
@@ -53,37 +53,37 @@ model ExcursionAppointment {
 
 model EventAppointment {
     id          String      @id
-    parent      Appointment @relation(fields: [id], references: [id])
+    parent      Appointment @relation(fields: [id], references: [id], onDelete: Cascade)
     name        String
     description String
 }
 
 model VacationAppointment {
     id     String      @id
-    parent Appointment @relation(fields: [id], references: [id])
+    parent Appointment @relation(fields: [id], references: [id], onDelete: Cascade)
     name   String
 }
 
 model HolidayAppointment {
     id     String      @id
-    parent Appointment @relation(fields: [id], references: [id])
+    parent Appointment @relation(fields: [id], references: [id], onDelete: Cascade)
     name   String
 }
 
 model EarlydayAppointment {
     id     String      @id
-    parent Appointment @relation(fields: [id], references: [id])
+    parent Appointment @relation(fields: [id], references: [id], onDelete: Cascade)
     name   String
 }
 
 model Subject {
-    id                 String              @id @default(cuid())
-    name               String
-    routeName          String              @unique
-    icon               String
-    lessonAppointments LessonAppointment[]
-    plans              Plan[]
-    areas              Area[]              @relation(name: "SubjectAreas")
+    id        String              @id @default(cuid())
+    name      String
+    routeName String              @unique
+    icon      String
+    lessons   LessonAppointment[]
+    plans     Plan[]
+    areas     Area[]              @relation(name: "SubjectAreas")
 }
 
 model Topic {
@@ -156,20 +156,19 @@ model Class {
 }
 
 model TimeSpan {
-    id           String         @id @default(cuid())
-    name         String         @unique
-    start        DateTime
-    end          DateTime
-    plans        Plan[]
-    PlanTemplate PlanTemplate[]
+    id        String         @id @default(cuid())
+    name      String         @unique
+    start     DateTime
+    end       DateTime
+    plans     Plan[]
+    templates PlanTemplate[]
 }
 
 model Teacher {
-    id        String @id @default(cuid())
-    firstName String
-    lastName  String
-    imageUrl  String
-    plans     Plan[]
+    id     String @id @default(cuid())
+    userId String @unique
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+    plans  Plan[]
 }
 
 // Necessary for Next auth
@@ -211,12 +210,15 @@ model ProfileImage {
 model User {
     id            String         @id @default(cuid())
     name          String?
+    firstName     String?
+    lastName      String?
     image         String?
     email         String?        @unique
     emailVerified DateTime?
     accounts      Account[]
     sessions      Session[]
     profileImages ProfileImage[]
+    teacher       Teacher?
 }
 
 model VerificationToken {

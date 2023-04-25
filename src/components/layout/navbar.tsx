@@ -20,10 +20,7 @@ import {
 import { signOut } from "next-auth/react";
 import Link from "next/link";
 
-const items = [
-  { icon: IconCalendar, label: "Pläne", href: "/plans" },
-  { icon: IconUser, label: "Profil", href: "/profile" },
-];
+const items = [{ icon: IconCalendar, label: "Pläne", href: "/plans" }];
 
 export function DefaultNavbar() {
   const { colors } = useMantineTheme();
@@ -53,11 +50,6 @@ export function DefaultNavbar() {
       </Navbar.Section>
       <Navbar.Section>
         <Stack justify="center" spacing={0}>
-          <NavbarLink
-            icon={IconSwitchHorizontal}
-            label="Change account"
-            onClick={() => []}
-          />
           <NavbarLink
             icon={IconLogout}
             label="Logout"
