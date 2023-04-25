@@ -1,7 +1,10 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import {
+  Avatar,
   Center,
   createStyles,
+  Indicator,
+  Menu,
   Navbar,
   rem,
   Stack,
@@ -10,22 +13,33 @@ import {
   useMantineTheme,
 } from "@mantine/core";
 import {
+  IconBell,
   IconCalendar,
   IconLogout,
   IconSchool,
+  IconSearch,
   IconSwitchHorizontal,
   IconUser,
   type TablerIconsProps,
 } from "@tabler/icons-react";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
+import { api } from "~/utils/api";
 
-const items = [
-  { icon: IconCalendar, label: "Pläne", href: "/plans" },
-  { icon: IconUser, label: "Profil", href: "/profile" },
-];
+const items = [{ icon: IconCalendar, label: "Pläne", href: "/plans" }];
 
 export function DefaultNavbar() {
+  const { data: me } = api.user.me.useQuery();
+  const { data: user } = api.user.byId.useQuery(
+    {
+      id: me?.id ?? "",
+    },
+    {
+      enabled: !!me?.id,
+    }
+  );
+
+  const { classes } = useStyles();
   const { colors } = useMantineTheme();
   const links = items.map((link) => <NavbarLink {...link} key={link.label} />);
 
@@ -52,15 +66,38 @@ export function DefaultNavbar() {
         </Stack>
       </Navbar.Section>
       <Navbar.Section>
-        <Stack justify="center" spacing={0}>
+        <Stack justify="center" spacing={0} align="center">
+          <NavbarLink icon={IconSearch} label="Suchen" onClick={() => []} />
+          <NavbarLink
+            icon={(props) => (
+              <Indicator label="99" offset={-3} color="transparent">
+                <IconBell {...props} />
+              </Indicator>
+            )}
+            label="Benachrichtigungen"
+            onClick={() => []}
+          />
+          <Tooltip
+            label="Dein Profil"
+            position="right"
+            transitionProps={{ duration: 0 }}
+          >
+            <UnstyledButton
+              component={Link}
+              href="/profile"
+              className={classes.link}
+            >
+              <Avatar radius="xl" src={user?.image} />
+            </UnstyledButton>
+          </Tooltip>
           <NavbarLink
             icon={IconSwitchHorizontal}
-            label="Change account"
+            label="Rolle wechseln"
             onClick={() => []}
           />
           <NavbarLink
             icon={IconLogout}
-            label="Logout"
+            label="Abmelden"
             onClick={() =>
               void signOut({
                 callbackUrl: "/login",
