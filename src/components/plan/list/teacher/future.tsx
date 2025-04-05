@@ -3,6 +3,7 @@ import { type TimeSpan } from "@prisma/client";
 import { useMemo } from "react";
 import { api, type RouterOutputs } from "~/utils/api";
 import { TeacherPlanList } from "./main";
+import { ListWrapper } from "~/components/entity/list";
 
 type FuturePlanTeacherListProps = {
   search: string;
@@ -11,7 +12,11 @@ type FuturePlanTeacherListProps = {
 export const FuturePlanTeacherList = ({
   search,
 }: FuturePlanTeacherListProps) => {
-  const { data: plans } = api.plan.future.useQuery({
+  const {
+    data: plans,
+    isLoading,
+    isError,
+  } = api.plan.future.useQuery({
     search,
     areaId: null,
   });
@@ -53,15 +58,22 @@ export const FuturePlanTeacherList = ({
   }, [plans]);
 
   return (
-    <Stack>
-      {timespans.map(({ timespan, plans }) => (
-        <Stack spacing="xs" key={timespan.id}>
-          <Title order={3} weight={500}>
-            {timespan.name}
-          </Title>
-          <TeacherPlanList plans={plans} showSubject />
-        </Stack>
-      ))}
-    </Stack>
+    <ListWrapper
+      isError={isError}
+      isLoading={isLoading}
+      items={plans}
+      label="Pläne"
+    >
+      <Stack>
+        {timespans.map(({ timespan, plans }) => (
+          <Stack spacing="xs" key={timespan.id}>
+            <Title order={3} weight={500}>
+              {timespan.name}
+            </Title>
+            <TeacherPlanList plans={plans} showSubject />
+          </Stack>
+        ))}
+      </Stack>
+    </ListWrapper>
   );
 };

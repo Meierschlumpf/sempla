@@ -430,6 +430,7 @@ export const PlanFirstStepForm = ({
               onClick={() => {
                 form.insertListItem("lessons", {
                   key: randomId(),
+                  id: null,
                   day: null!,
                   start: null!,
                   end: null!,

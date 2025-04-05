@@ -26,7 +26,7 @@ const Page: NextPage<{
           <Stepper
             active={active}
             breakpoint="sm"
-            onStepClick={setActive}
+            onStepClick={active === 2 ? undefined : setActive}
             allowNextStepsSelect={false}
           >
             <Stepper.Step

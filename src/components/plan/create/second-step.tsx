@@ -20,33 +20,6 @@ type PlanSecondStepFormProps = {
   setTemplateId: (templateId: string | null) => void;
 };
 
-const templates = [
-  {
-    name: "Leere Vorlage",
-    description: "Beginnen Sie ganz von vorne.",
-    events: 0,
-    uses: 0,
-  },
-  {
-    name: "Standardvorlage",
-    description: "Vorlage mit allen Ferien- und Feiertagen.",
-    events: 13,
-    uses: 0,
-  },
-  {
-    name: "Vorlage BMS Teilabschluss- / Abschlussklassen",
-    description: "Vorlage speziell für BMS Teilabschluss- / Abschlussklassen.",
-    events: 13,
-    uses: 0,
-  },
-  {
-    name: "Vorlage mit Projektwoche",
-    description: "Vorlage speziell für BMS Klassen mit Projektwoche.",
-    events: 14,
-    uses: 0,
-  },
-];
-
 export const PlanSecondStepForm = ({
   nextSteep,
   planId,
@@ -100,7 +73,7 @@ export const PlanSecondStepForm = ({
             >
               <Card
                 withBorder
-                h={175}
+                h={192}
                 style={{
                   border:
                     templateId === template.id

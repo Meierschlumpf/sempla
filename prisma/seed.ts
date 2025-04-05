@@ -226,7 +226,7 @@ const prisma = new prismaModule.PrismaClient();
       data: {
         name: "Vorlage BMS Teil- / Abschlussklassen",
         description:
-          "Die Vorlage enthält alle Feier- und Ferientage für BMS Teil- / Abschlussklassen.",
+          "Die Vorlage ist speziell für die BMS Teil- / Abschlussklassen.",
         timeSpanId: semesterSpring2023.id,
         isDraft: false,
         areaId: bms.id,
@@ -490,7 +490,7 @@ const prisma = new prismaModule.PrismaClient();
       data: {
         name: "Vorlage BMS Teil- / Abschlussklassen",
         description:
-          "Die Vorlage enthält alle Feier- und Ferientage für BMS Teil- / Abschlussklassen.",
+          "Die Vorlage ist speziell für die BMS Teil- / Abschlussklassen.",
         timeSpanId: semesterSpring2024.id,
         isDraft: false,
         areaId: bms.id,

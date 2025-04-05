@@ -3,13 +3,18 @@ import { type TimeSpan } from "@prisma/client";
 import { useMemo } from "react";
 import { api, type RouterOutputs } from "~/utils/api";
 import { TeacherPlanList } from "./main";
+import { ListWrapper } from "~/components/entity/list";
 
 type PastPlanTeacherListProps = {
   search: string;
 };
 
 export const PastPlanTeacherList = ({ search }: PastPlanTeacherListProps) => {
-  const { data: plans } = api.plan.past.useQuery({
+  const {
+    data: plans,
+    isLoading,
+    isError,
+  } = api.plan.past.useQuery({
     search,
     areaId: null,
   });
@@ -51,15 +56,22 @@ export const PastPlanTeacherList = ({ search }: PastPlanTeacherListProps) => {
   }, [plans]);
 
   return (
-    <Stack>
-      {timespans.map(({ timespan, plans }) => (
-        <Stack spacing="xs" key={timespan.id}>
-          <Title order={3} weight={500}>
-            {timespan.name}
-          </Title>
-          <TeacherPlanList plans={plans} showSubject />
-        </Stack>
-      ))}
-    </Stack>
+    <ListWrapper
+      isError={isError}
+      isLoading={isLoading}
+      items={plans}
+      label="Pläne"
+    >
+      <Stack>
+        {timespans.map(({ timespan, plans }) => (
+          <Stack spacing="xs" key={timespan.id}>
+            <Title order={3} weight={500}>
+              {timespan.name}
+            </Title>
+            <TeacherPlanList plans={plans} showSubject />
+          </Stack>
+        ))}
+      </Stack>
+    </ListWrapper>
   );
 };

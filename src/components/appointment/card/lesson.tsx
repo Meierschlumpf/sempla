@@ -57,7 +57,7 @@ export const AppointmentLessonCard = ({
             </Title>
             {showSubject ? (
               <Group spacing={4}>
-                <Tooltip label="Thema">
+                <Tooltip label="Thema" withinPortal>
                   <IconAddressBook size={16} color={colors.dark[3]} />
                 </Tooltip>
                 <Text size="sm" color={colors.dark[3]}>
@@ -66,7 +66,7 @@ export const AppointmentLessonCard = ({
               </Group>
             ) : mode === "edit" ? (
               <Group spacing={4}>
-                <Tooltip label="Zeit">
+                <Tooltip label="Zeit" withinPortal>
                   <IconClock size={16} color={colors.dark[3]} />
                 </Tooltip>
                 <Text size="sm" color={colors.dark[3]}>
@@ -75,14 +75,14 @@ export const AppointmentLessonCard = ({
               </Group>
             ) : null}
           </Stack>
-          <Stack spacing={0} ml="xl">
+          {/*<Stack spacing={0} ml="xl">
             <Title order={5} weight={400}>
               Hausaufgaben und Aufträge
             </Title>
             <Group>
               <UnstyledButton>
                 <Group spacing={4}>
-                  <Tooltip label="Hausaufgaben">
+                  <Tooltip label="Hausaufgaben" withinPortal>
                     <IconHome size={16} color={colors.dark[3]} />
                   </Tooltip>
                   <Text size="sm" color={colors.dark[3]}>
@@ -92,7 +92,7 @@ export const AppointmentLessonCard = ({
               </UnstyledButton>
               <UnstyledButton>
                 <Group spacing={4}>
-                  <Tooltip label="Aufträge">
+                  <Tooltip label="Aufträge" withinPortal>
                     <IconChecklist size={16} color={colors.dark[3]} />
                   </Tooltip>
                   <Text size="sm" color={colors.dark[3]}>
@@ -101,7 +101,7 @@ export const AppointmentLessonCard = ({
                 </Group>
               </UnstyledButton>
             </Group>
-          </Stack>
+          </Stack>*/}
         </Group>
         <Group>
           {mode === "edit" ? (

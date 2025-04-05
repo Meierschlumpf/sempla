@@ -336,11 +336,11 @@ export const planRouter = createTRPCRouter({
         include: {
           appointments: {
             include: {
-              earlydayAppointments: true,
+              earlydayAppointment: true,
               eventAppointment: true,
-              vacationAppointments: true,
+              vacationAppointment: true,
               excursionAppointment: true,
-              holidayAppointments: true,
+              holidayAppointment: true,
             },
           },
         },

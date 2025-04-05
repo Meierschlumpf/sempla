@@ -1,5 +1,6 @@
 import {
   Badge,
+  Button,
   Container,
   Group,
   SegmentedControl,
@@ -13,6 +14,7 @@ import { type Area } from "@prisma/client";
 import { type DehydratedState } from "@tanstack/react-query";
 import { type GetServerSideProps, type NextPage } from "next";
 import Head from "next/head";
+import Link from "next/link";
 import { Layout } from "~/components/layout/layout";
 import { CurrentPlanList } from "~/components/plan/list/student/current";
 import { FuturePlanList } from "~/components/plan/list/student/future";
@@ -139,6 +141,9 @@ const TeacherPage: NextPage<Omit<TeacherPageProps, "type">> = ({ query }) => {
         <Container>
           <Group position="apart">
             <Title>Übersicht Semesterpläne</Title>
+            <Button component={Link} href="/plans/create">
+              Plan erstellen
+            </Button>
           </Group>
           <Tabs value={tab} onTabChange={setTab}>
             <Tabs.List mb="sm">
@@ -214,7 +219,7 @@ export const getServerSideProps: GetServerSideProps<
   const search = getSearchParamWithFallback(context.query, "search", "");
   const tab = getSearchParamWithFallback(context.query, "tab", "current");
 
-  if (true) {
+  if (false) {
     return {
       props: {
         trpcState: ssg.dehydrate(),
